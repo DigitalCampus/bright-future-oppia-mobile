@@ -2,7 +2,6 @@
     package="org.bright.future.oppia.mobile.learning"
     android:versionCode="63"
     android:versionName="1.2.5">
- 
 
     <uses-sdk
         android:minSdkVersion="8"
