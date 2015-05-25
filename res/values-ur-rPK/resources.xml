@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prefServerDefault">http://52.17.123.50/</string>
+    <string name="prefServerTimeoutConnectionDefault">10000</string>
+    <string name="prefServerTimeoutResponseDefault">20000</string>
+    
+	<!--     http://183.82.96.201:8888/,  http://52.17.123.50/, 10000(connection default), 20000(response default) -->
+</resources>

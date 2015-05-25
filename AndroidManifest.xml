@@ -1,0 +1,141 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.bright.future.oppia.mobile.learning"
+    android:versionCode="63"
+    android:versionName="1.2.5">
+ 
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="19" />
+
+    <uses-permission
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+
+    <application
+        android:icon="@drawable/bright_future_logo"
+        android:label="@string/app_name"
+        android:theme="@style/Oppia.Theme"
+        android:allowBackup="true"
+        android:name="org.digitalcampus.oppia.application.MobileLearning">
+        <activity
+            android:name="org.digitalcampus.oppia.activity.StartUpActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Oppia.Theme">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.RoutingActivity"
+            android:label="@string/app_name"/>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.OppiaMobileActivity"
+            android:label="@string/app_name"
+            android:theme="@style/Oppia.Theme.Dark">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.CourseIndexActivity"
+            android:label="@string/title_activity_course_index" 
+            android:theme="@style/Oppia.Theme.Dark">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.ClientListActivity"
+            android:label="@string/title_activity_client_list"
+            android:theme="@style/Oppia.Theme">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.ClientInfoActivity"
+            android:label="@string/title_activity_client_info"
+            android:theme="@style/Oppia.Theme">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.CourseActivity"
+            android:label="@string/title_activity_course" 
+            android:windowSoftInputMode="stateAlwaysHidden">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.DownloadActivity"
+            android:label="@string/title_download_activity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout"
+            android:screenOrientation="portrait">
+        </activity>
+         <activity
+            android:name="org.digitalcampus.oppia.activity.TagSelectActivity"
+            android:label="@string/title_tag_select_activity"
+            android:screenOrientation="portrait"
+   			android:configChanges="orientation|keyboardHidden">
+        </activity>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.PrefsActivity"
+            android:label="@string/title_prefs"/>
+        <activity
+            android:name="org.digitalcampus.oppia.activity.AboutActivity"
+            android:label="@string/title_about" />
+        <activity
+            android:name="org.digitalcampus.oppia.activity.WelcomeActivity"
+            android:label="@string/title_welcome" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.MonitorActivity"
+            android:label="@string/title_monitor"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.CourseMetaPageActivity"
+            android:label="@string/title_course_meta" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.DownloadMediaActivity"
+            android:label="@string/title_download_media"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout" 
+            android:screenOrientation="portrait"/>
+         <activity
+            android:name="org.digitalcampus.oppia.activity.ScorecardActivity"
+            android:label="@string/title_scorecard" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.SearchActivity"
+            android:label="@string/title_search" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.AppActivity"
+            android:label="@string/app_name" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.ClientRegActivity"
+            android:label="Client Registration" />
+         <activity
+            android:name="org.digitalcampus.oppia.activity.CounsellingHomeActivity"
+            android:label="Counselling Home Screen" />
+          <activity
+            android:name="org.digitalcampus.oppia.activity.PreTestActivity"
+            android:label="Pre-test" />
+		<activity
+            android:name="org.digitalcampus.oppia.utils.mediaplayer.VideoPlayerActivity"
+            android:label="@string/media_player_description"
+            android:screenOrientation="landscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
+        <service
+            android:name="org.digitalcampus.oppia.service.TrackerService"
+            android:icon="@drawable/bright_future_logo"
+            android:label="@string/service_tracker" >
+        </service>
+        
+		<receiver android:name="org.digitalcampus.oppia.service.TrackerScheduleReceiver" >
+            <intent-filter>                
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <!--<action android:name="android.net.wifi.WIFI_STATE_CHANGED" />-->
+                <!--<action android:name="android.intent.action.BOOT_COMPLETED" />-->
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="org.digitalcampus.oppia.service.TrackerStartServiceReceiver" >
+        </receiver>
+    </application>
+
+</manifest>

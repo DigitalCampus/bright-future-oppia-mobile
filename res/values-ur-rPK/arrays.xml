@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="NoScheduleReminders">
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5</item>
+    </string-array>
+    <string-array name="NoScheduleRemindersValues">
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5</item>
+    </string-array>
+    <string-array name="sex">
+        <item name="0"></item>
+        <item name="1">عورت</item>
+        <item name="2">مرد</item>
+    </string-array>
+	<string-array name="yesno">
+        <item name="0"></item>
+        <item name="1">ہاں</item>
+        <item name="2">نہیں</item>
+    </string-array>
+    <string-array name="parity">
+        <item name="0">0</item>
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5+</item>
+    </string-array>
+     <string-array name="lifestage">
+        <item name="0"></item>
+        <item name="1">بالغ</item>
+        <item name="2">نو وھاتا</item>
+        <item name="3">حاملہ</item>
+        <item name="4">ایک بچہ</item>
+        <item name="5">انچاهاحمل</item>
+        <item name="6">دو یا دو سے زیادہ بچے</item>
+    </string-array>
+    <string-array name="TextSize">
+        <item name="12">Smallest</item>
+        <item name="14">Small</item>
+        <item name="16">Normal</item>
+        <item name="18">Large</item>
+        <item name="20">Largest</item>
+    </string-array>
+     <string-array name="TextSizeValues">
+        <item name="12">12</item>
+        <item name="14">14</item>
+        <item name="16">16</item>
+        <item name="18">18</item>
+        <item name="20">20</item>
+    </string-array>
+    <string-array name="method">
+        <item name="0"></item>
+        <item name="1">ہاں</item>
+        <item name="2">نہیں</item>
+    </string-array>
+    <string-array name="methodName">
+        <item name="0"></item>
+        <item name="1">آئ یو ڈی</item>
+        <item name="2">مانع حمل ٹیکہ</item>
+        <item name="3">کنڈوم</item>
+        <item name="4">مانع حمل گولیاں</item>
+        <item name="5">نل بندی</item>
+        <item name="6">نس بندی</item>
+        <item name="7">ہنگامی گولی مانع حمل</item>
+        <item name="8">اسقاط حمل کے بعد</item>
+        <item name="9">ترسیل کے بعد</item>
+    </string-array>
+</resources>

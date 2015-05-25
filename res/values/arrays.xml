@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="NoScheduleReminders">
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5</item>
+    </string-array>
+    <string-array name="NoScheduleRemindersValues">
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5</item>
+    </string-array>
+    <string-array name="sex">
+        <item name="0"></item>
+        <item name="1">Female</item>
+        <item name="2">Male</item>
+    </string-array>
+	<string-array name="yesno">
+        <item name="0"></item>
+        <item name="1">Yes</item>
+        <item name="2">No</item>
+    </string-array>
+    <string-array name="parity">
+        <item name="0">0</item>
+        <item name="1">1</item>
+        <item name="2">2</item>
+        <item name="3">3</item>
+        <item name="4">4</item>
+        <item name="5">5+</item>
+    </string-array>
+     <string-array name="lifestage">
+        <item name="0"></item>
+        <item name="1">Adolescent</item>
+        <item name="2">Newly married</item>
+        <item name="3">Pregnant</item>
+        <item name="4">One child</item>
+        <item name="5">Unwanted pregnancy</item>
+        <item name="6">Two or more children</item>
+    </string-array>
+    <string-array name="TextSize">
+        <item name="12">Smallest</item>
+        <item name="14">Small</item>
+        <item name="16">Normal</item>
+        <item name="18">Large</item>
+        <item name="20">Largest</item>
+    </string-array>
+     <string-array name="TextSizeValues">
+        <item name="12">12</item>
+        <item name="14">14</item>
+        <item name="16">16</item>
+        <item name="18">18</item>
+        <item name="20">20</item>
+    </string-array>
+    <string-array name="method">
+        <item name="0"></item>
+        <item name="1">Yes</item>
+        <item name="2">No</item>
+    </string-array>
+    <string-array name="methodName">
+        <item name="0"></item>
+        <item name="1">IUCD</item>
+        <item name="2">Injectable</item>
+        <item name="3">Condom</item>
+        <item name="4">OCP</item>
+        <item name="5">Female Sterilization</item>
+        <item name="6">NSV (Male Sterilization)</item>
+        <item name="7">ECP</item>
+        <item name="8">Post Abortion</item>
+        <item name="9">Postpartum Family Planning</item>
+    </string-array>
+</resources>

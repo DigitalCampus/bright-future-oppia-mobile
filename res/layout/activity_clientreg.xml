@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="left"
+        android:orientation="vertical" >
+        
+        <TextView
+            android:id="@+id/clientreg_form_name_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_name_title" />
+
+        <EditText
+            android:id="@+id/clientreg_form_name_field"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/clientreg_form_mobile_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_mobile_title" />
+
+        <EditText
+            android:id="@+id/clientreg_form_mobile_field"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"/>
+        
+        
+        
+         <TextView
+            android:id="@+id/clientreg_form_sex_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_sex_title" />
+
+        <Spinner
+            android:id="@+id/clientreg_form_sex_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        
+        <TextView
+            android:id="@+id/clientreg_form_married_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_married_title" />
+
+        <Spinner
+            android:id="@+id/clientreg_form_married_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        
+        <TextView
+            android:id="@+id/clientreg_form_age_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_age_title" />
+        <EditText
+            android:id="@+id/clientreg_form_age_field"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"/>
+        
+         <TextView
+            android:id="@+id/clientreg_form_parity_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_parity_title" />
+
+        <Spinner
+            android:id="@+id/clientreg_form_parity_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+        
+        <TextView
+            android:id="@+id/clientreg_form_lifestage_title"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/clientreg_form_lifestage_title" />
+
+        <Spinner
+            android:id="@+id/clientreg_form_lifestage_spinner"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content" />
+
+        <LinearLayout 
+            android:id="@+id/female_client_husband_required_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/clientreg_form_husband_name_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clientreg_form_husband_title" />
+            <EditText
+                android:id="@+id/clientreg_form_husband_name_field"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/female_client_child_age_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/clientreg_form_age_youngest_child_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clientreg_form_childage_title" />
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/clientreg_form_age_youngest_child_field_years"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:inputType="number" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/year" />
+                <EditText
+                    android:id="@+id/clientreg_form_age_youngest_child_field_months"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:inputType="number" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/month" />
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/if_using_method_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+                android:id="@+id/clientreg_form_lifestage_spinner"
+                android:layout_width="fill_parent"
+            <TextView
+                android:id="@+id/clientreg_form_using_method_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clientreg_form_using_method_title"/>
+            <Spinner
+                android:id="@+id/clientreg_form_using_method_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/clientreg_form_method_name_title"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clientreg_form_method_name_title"/>
+            <Spinner
+                android:id="@+id/clientreg_form_method_name_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/submit_btn"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/submit_btn_text" />
+    </LinearLayout>
+
+</ScrollView>

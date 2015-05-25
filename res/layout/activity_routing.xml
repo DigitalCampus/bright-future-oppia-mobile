@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    
+        <LinearLayout
+        android:id="@+id/home_messages"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/message_background"
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:weightSum="1.0"
+        android:visibility="gone" >
+
+ 		<LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.7" >
+
+            <TextView
+                android:id="@+id/home_message"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:textSize="14sp"
+                android:textColor="@color/text_dark"/>
+        </LinearLayout>
+        
+        <Button
+            android:id="@+id/message_action_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".3"
+            android:gravity="center_vertical|center"
+            android:text="@string/scan_media_download_button"
+            android:textColor="@color/text_dark"/>
+    </LinearLayout>
+    
+    <TextView
+        style="@style/HeaderText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="@string/routing_activity_title" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp" >
+
+        <ImageView
+            android:id="@+id/mlearning_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:contentDescription="@string/app_logo_alt"
+            android:src="@drawable/mobile_learning_icon" />
+
+        <Button
+            android:id="@+id/button_learning"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_toRightOf="@+id/mlearning_image"
+            android:text="@string/routing_button_mlearning"
+            android:textColor="@color/text_dark" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp" >
+
+        <ImageView
+            android:id="@+id/counselling_image"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:contentDescription="@string/app_logo_alt"
+            android:src="@drawable/counselling_icon" />
+
+        <Button
+            android:id="@+id/button_counselling"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_toRightOf="@+id/counselling_image"
+            android:text="@string/routing_button_client"
+            android:textColor="@color/text_dark" />
+    </RelativeLayout>
+
+</LinearLayout>
