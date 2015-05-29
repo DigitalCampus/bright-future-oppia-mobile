@@ -14,7 +14,7 @@
             android:layout_height="@dimen/client_fields_title_height"
             android:textSize="@dimen/title_text_size"
             android:textStyle="bold"
-            android:paddingLeft="@dimen/padding_left"
+            android:paddingStart="@dimen/padding_left"
             android:maxLines="1"
             android:gravity="center"
             android:text="@string/details"/>
@@ -22,7 +22,7 @@
             android:id="@+id/client_detail_visit_button"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/client_fields_title_height"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:text="@string/makevisit"/>
     </RelativeLayout>
     <View
@@ -49,7 +49,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_name_title" />
 
                 <TextView
@@ -59,9 +59,9 @@
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:minHeight="@dimen/client_fields_title_height"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_toRightOf="@id/client_name"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_toEndOf="@id/client_name"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -72,7 +72,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_mobile_title" />
 
                 <TextView
@@ -81,8 +81,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -93,7 +93,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_sex_title" />
 
                 <TextView
@@ -102,8 +102,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -114,7 +114,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_married_title" />
 
                 <TextView
@@ -123,8 +123,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -135,7 +135,7 @@
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:layout_height="@dimen/client_fields_title_height"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_age_title" />
 
                 <TextView
@@ -144,8 +144,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -156,7 +156,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_parity_title" />
 
                 <TextView
@@ -165,8 +165,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:layout_width="fill_parent"
@@ -177,7 +177,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_lifestage_title" />
 
                 <TextView
@@ -186,8 +186,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/husband_name_layout"
@@ -200,16 +200,16 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_husband_title_info_page" />
 
                 <TextView
                     android:id="@+id/client_husband_value"
                     android:layout_width="wrap_content"
                     android:layout_height="@dimen/client_fields_title_height"
-                    android:layout_alignParentRight="true"
-                    android:layout_toRightOf="@+id/client_husband"
-                    android:gravity="right|center_vertical"
+                    android:layout_alignParentEnd="true"
+                    android:layout_toEndOf="@+id/client_husband"
+                    android:gravity="end|center_vertical"
                     android:maxLength="9000"
                     android:textSize="@dimen/client_fields_title_text_size" />
 
@@ -225,7 +225,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_childage_title_info_page" />
 
                 <TextView
@@ -234,8 +234,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <RelativeLayout
                 android:id="@+id/method_name_layout"
@@ -248,7 +248,7 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textStyle="bold"
                     android:textSize="@dimen/client_fields_title_text_size"
-                    android:gravity="left|center_vertical"
+                    android:gravity="start|center_vertical"
                     android:text="@string/clientreg_form_method_name_title" />
 
                 <TextView
@@ -257,8 +257,8 @@
                     android:layout_height="@dimen/client_fields_title_height"
                     android:textSize="@dimen/client_fields_title_text_size"
                     android:maxLength="9000"
-                    android:gravity="right|center_vertical"
-                    android:layout_alignParentRight="true"/>
+                    android:gravity="end|center_vertical"
+                    android:layout_alignParentEnd="true"/>
             </RelativeLayout>
             <LinearLayout
                 android:layout_width="fill_parent"

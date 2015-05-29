@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="bottom"
-            android:gravity="left"
+            android:gravity="start"
             android:text="@string/clients_list"
             android:textSize="@dimen/title_text_size" />
 

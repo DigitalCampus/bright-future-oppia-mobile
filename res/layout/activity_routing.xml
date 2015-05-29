@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
-
+    android:orientation="vertical" 
+    android:id="@+id/routing_activity_layout">
     
         <LinearLayout
         android:id="@+id/home_messages"
@@ -65,7 +65,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_toRightOf="@+id/mlearning_image"
+            android:layout_toEndOf="@+id/mlearning_image"
             android:text="@string/routing_button_mlearning"
             android:textColor="@color/text_dark" />
     </RelativeLayout>
@@ -88,7 +88,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_toRightOf="@+id/counselling_image"
+            android:layout_toEndOf="@+id/counselling_image"
             android:text="@string/routing_button_client"
             android:textColor="@color/text_dark" />
     </RelativeLayout>
