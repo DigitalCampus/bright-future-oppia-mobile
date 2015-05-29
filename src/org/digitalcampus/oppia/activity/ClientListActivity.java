@@ -38,6 +38,7 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
     private ListView listView;
     private Context context;
     private TextView noClientsText;
+    private Button searchClient;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,7 +49,8 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
         clientRegistrationButton = (Button) findViewById(R.id.list_create_client);
         noClientsText = (TextView)findViewById(R.id.tv_no_clients);
         listView = (ListView) findViewById(R.id.list_lv_clients);
-
+        searchClient = (Button)findViewById(R.id.search_client);
+        
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         prefs.registerOnSharedPreferenceChangeListener(this);
 
@@ -63,7 +65,18 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
             ClientListActivity.this.finish();
             }
         });
-
+        
+        searchClient.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(ClientListActivity.this, SearchActivity.class);
+				Bundle b = new Bundle();
+				b.putString("clientSearch", "clientSearch");
+				i.putExtras(b);
+                startActivity(i);
+ 			}
+		});
+    
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {

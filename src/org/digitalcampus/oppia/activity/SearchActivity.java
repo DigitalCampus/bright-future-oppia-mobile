@@ -48,7 +48,7 @@ public class SearchActivity extends AppActivity {
     private TextView summary;
 	private SharedPreferences prefs;
 	private long userId = 0;
-
+	private boolean isOnlyClientSearch = false;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,7 +56,17 @@ public class SearchActivity extends AppActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
-	}
+        
+        try{
+        	Bundle extras = getIntent().getExtras();
+        	String StringCleintSearch = extras.getString("clientSearch");
+        	if(StringCleintSearch.equals("clientSearch") ) {
+        		isOnlyClientSearch = true;
+        	}
+        }catch(Exception e){
+        	e.printStackTrace();
+        }
+ 	}
 	
 	@Override
 	public void onStart(){
@@ -82,7 +92,7 @@ public class SearchActivity extends AppActivity {
 		String searchString = searchText.getText().toString().trim();
 		DbHelper db = new DbHelper(this);
         String userName = prefs.getString("prefUsername", "");
-		ArrayList<SearchOutput> results = db.search(searchString, 100, userId, this, userName);
+		ArrayList<SearchOutput> results = db.search(searchString, 100, userId, this, userName, isOnlyClientSearch);
         DatabaseManager.getInstance().closeDatabase();
 
 		srla = new SearchResultsListAdapter(this, results);

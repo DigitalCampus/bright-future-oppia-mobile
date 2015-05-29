@@ -1159,75 +1159,78 @@ public class DbHelper extends SQLiteOpenHelper {
 	 * Perform a search
 	 */
 
-    public ArrayList<SearchOutput> search(String searchText, int limit, long userId, Context ctx, String userName){
+    public ArrayList<SearchOutput> search(String searchText, int limit, long userId, Context ctx, String userName, boolean isOnlyClientSearch){
         ArrayList<SearchOutput> results = new ArrayList<SearchOutput>();
-        String sqlSeachFullText = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 1 AS ranking FROM %s ft " +
-                        " INNER JOIN %s a ON a.%s = ft.docid" +
-                        " INNER JOIN %s c ON a.%s = c.%s " +
-                        " WHERE %s MATCH '%s' ",
-                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
-                ACTIVITY_TABLE, ACTIVITY_C_ID,
-                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
-                SEARCH_C_TEXT, searchText);
-        String sqlActivityTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 5 AS ranking FROM %s ft " +
-                        " INNER JOIN %s a ON a.%s = ft.docid" +
-                        " INNER JOIN %s c ON a.%s = c.%s " +
-                        " WHERE %s MATCH '%s' ",
-                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
-                ACTIVITY_TABLE, ACTIVITY_C_ID,
-                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
-                SEARCH_C_ACTIVITYTITLE, searchText);
-
-        String sqlSectionTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 10 AS ranking FROM %s ft " +
-                        " INNER JOIN %s a ON a.%s = ft.docid" +
-                        " INNER JOIN %s c ON a.%s = c.%s " +
-                        " WHERE %s MATCH '%s' ",
-                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
-                ACTIVITY_TABLE, ACTIVITY_C_ID,
-                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
-                SEARCH_C_SECTIONTITLE, searchText);
-        String sqlCourseTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 15 AS ranking FROM %s ft " +
-                        " INNER JOIN %s a ON a.%s = ft.docid" +
-                        " INNER JOIN %s c ON a.%s = c.%s " +
-                        " WHERE %s MATCH '%s' ",
-                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
-                ACTIVITY_TABLE, ACTIVITY_C_ID,
-                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
-                SEARCH_C_COURSETITLE, searchText);
-
-        String sql = String.format("SELECT * FROM (" +
-                        "%s UNION %s UNION %s UNION %s) ORDER BY ranking DESC LIMIT 0,%d",
-                sqlSeachFullText, sqlActivityTitle, sqlSectionTitle, sqlCourseTitle, limit);
-        // till this part search is being implemented for Courses, Activities and Sections
-
-        Cursor c = db.rawQuery(sql,null);
-        if(c !=null && c.getCount()>0){
-            c.moveToFirst();
-            while (c.isAfterLast() == false) {
-                SearchResult result = new SearchResult();
-
-                int courseId = c.getColumnIndex("courseid");
-                Course course = this.getCourse(c.getLong(courseId),userId);
-                result.setCourse(course);
-
-                int digest = c.getColumnIndex("activitydigest");
-                Activity activity = this.getActivityByDigest(c.getString(digest));
-                result.setActivity(activity);
-
-                int sectionOrderId = activity.getSectionId();
-                CourseXMLReader cxr;
-                try {
-                    cxr = new CourseXMLReader(course.getCourseXMLLocation(), ctx);
-                    result.setSection(cxr.getSection(sectionOrderId));
-                    results.add(result);
-                } catch (InvalidXMLException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-                c.moveToNext();
-            }
-        }
-        c.close();
+        Cursor c;
+        if(!isOnlyClientSearch) {
+	        String sqlSeachFullText = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 1 AS ranking FROM %s ft " +
+	                        " INNER JOIN %s a ON a.%s = ft.docid" +
+	                        " INNER JOIN %s c ON a.%s = c.%s " +
+	                        " WHERE %s MATCH '%s' ",
+	                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
+	                ACTIVITY_TABLE, ACTIVITY_C_ID,
+	                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
+	                SEARCH_C_TEXT, searchText);
+	        String sqlActivityTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 5 AS ranking FROM %s ft " +
+	                        " INNER JOIN %s a ON a.%s = ft.docid" +
+	                        " INNER JOIN %s c ON a.%s = c.%s " +
+	                        " WHERE %s MATCH '%s' ",
+	                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
+	                ACTIVITY_TABLE, ACTIVITY_C_ID,
+	                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
+	                SEARCH_C_ACTIVITYTITLE, searchText);
+	
+	        String sqlSectionTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 10 AS ranking FROM %s ft " +
+	                        " INNER JOIN %s a ON a.%s = ft.docid" +
+	                        " INNER JOIN %s c ON a.%s = c.%s " +
+	                        " WHERE %s MATCH '%s' ",
+	                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
+	                ACTIVITY_TABLE, ACTIVITY_C_ID,
+	                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
+	                SEARCH_C_SECTIONTITLE, searchText);
+	        String sqlCourseTitle = String.format("SELECT c.%s AS courseid, a.%s as activitydigest, a.%s as sectionid, 15 AS ranking FROM %s ft " +
+	                        " INNER JOIN %s a ON a.%s = ft.docid" +
+	                        " INNER JOIN %s c ON a.%s = c.%s " +
+	                        " WHERE %s MATCH '%s' ",
+	                COURSE_C_ID, ACTIVITY_C_ACTIVITYDIGEST, ACTIVITY_C_SECTIONID, SEARCH_TABLE,
+	                ACTIVITY_TABLE, ACTIVITY_C_ID,
+	                COURSE_TABLE, ACTIVITY_C_COURSEID, COURSE_C_ID,
+	                SEARCH_C_COURSETITLE, searchText);
+	
+	        String sql = String.format("SELECT * FROM (" +
+	                        "%s UNION %s UNION %s UNION %s) ORDER BY ranking DESC LIMIT 0,%d",
+	                sqlSeachFullText, sqlActivityTitle, sqlSectionTitle, sqlCourseTitle, limit);
+	        // till this part search is being implemented for Courses, Activities and Sections
+	
+	        c = db.rawQuery(sql,null);
+	        if(c !=null && c.getCount()>0){
+	            c.moveToFirst();
+	            while (c.isAfterLast() == false) {
+	                SearchResult result = new SearchResult();
+	
+	                int courseId = c.getColumnIndex("courseid");
+	                Course course = this.getCourse(c.getLong(courseId),userId);
+	                result.setCourse(course);
+	
+	                int digest = c.getColumnIndex("activitydigest");
+	                Activity activity = this.getActivityByDigest(c.getString(digest));
+	                result.setActivity(activity);
+	
+	                int sectionOrderId = activity.getSectionId();
+	                CourseXMLReader cxr;
+	                try {
+	                    cxr = new CourseXMLReader(course.getCourseXMLLocation(), ctx);
+	                    result.setSection(cxr.getSection(sectionOrderId));
+	                    results.add(result);
+	                } catch (InvalidXMLException e) {
+	                    // TODO Auto-generated catch block
+	                    e.printStackTrace();
+	                }
+	                c.moveToNext();
+	            }
+	        }
+	        c.close();
+    	}
         // Search items for courses, activities and sections added to the SearchOutput arraylist
         Client client;
         String sqlClientTitle = "SELECT * FROM "+CLIENT_TABLE+" WHERE "+CLIENT_C_NAME+" LIKE '%"+searchText+"%' AND " +
