@@ -32,6 +32,7 @@ import org.digitalcampus.oppia.task.ScanMediaTask;
 import org.digitalcampus.oppia.utils.UIUtils;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -55,11 +56,19 @@ public class RoutingActivity extends AppActivity implements ScanMediaListener {
 	private SharedPreferences prefs;
 	private ArrayList<Course> courses = new ArrayList<Course>() ;
 	private DbHelper db;
+	private Context ctx;
     @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		ctx=this;
 		setContentView(R.layout.activity_routing);
+		final String language = ctx.getResources().getConfiguration().locale.getLanguage(); 
+        if(language.equals("ur")) { 
+        	LinearLayout detailContainer = (LinearLayout) findViewById(R.id.routing_activity_layout); 
+	        detailContainer.setTextDirection(View.TEXT_DIRECTION_RTL);
+	        detailContainer.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
+		
 	    prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
 

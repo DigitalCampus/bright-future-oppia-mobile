@@ -80,7 +80,7 @@ public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Paylo
 				
 				for (Collection<TrackerLog> trackerBatch : result) {
 					String dataToSend = createDataString(trackerBatch);
-					
+					Log.d(TAG, "Debug data to Send: "+dataToSend);
 					try {
 		
 						HTTPConnectionUtils client = new HTTPConnectionUtils(ctx);

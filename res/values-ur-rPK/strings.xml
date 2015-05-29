@@ -62,8 +62,8 @@
     <string name="title_welcome">Bright Future</string>
     <string name="version">Version: %1$s</string>
     <string name="title_download_media">فلمز ڈاؤن لوڈ کریں</string>
-    <string name="title_activity_client_list">Client List</string>
-    <string name="title_activity_client_info">Client Info</string>
+    <string name="title_activity_client_list">کلائنٹ کی فہرست</string>
+    <string name="title_activity_client_info">کلائنٹ کی معلومات</string>
     
     <string name="widget_feedback_submit">جمع کروائں</string>
     <string name="widget_feedback_submit_title">شکریہ!</string>

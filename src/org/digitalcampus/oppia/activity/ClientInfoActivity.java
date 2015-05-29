@@ -51,6 +51,12 @@ public class ClientInfoActivity extends AppActivity {
         super.onCreate(savedInstanceState);
         ctx = this;
         setContentView(R.layout.activity_client_detail);
+        final String language = ctx.getResources().getConfiguration().locale.getLanguage(); 
+        if(language.equals("ur")) { 
+	        RelativeLayout detailContainer = (RelativeLayout) findViewById(R.id.client_row); 
+	        detailContainer.setTextDirection(View.TEXT_DIRECTION_RTL);
+	        detailContainer.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
+        }
         clientNameTextView = (TextView) findViewById(R.id.client_name_value);
         clientMobileTextView = (TextView) findViewById(R.id.client_mobile_number_value);
         clientGenderTextView = (TextView) findViewById(R.id.client_sex_value);

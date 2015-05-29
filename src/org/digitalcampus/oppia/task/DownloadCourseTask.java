@@ -33,6 +33,7 @@ import org.digitalcampus.oppia.listener.InstallCourseListener;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.model.DownloadProgress;
 import org.digitalcampus.oppia.utils.HTTPConnectionUtils;
+import org.digitalcampus.oppia.utils.UIUtils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -65,8 +66,14 @@ public class DownloadCourseTask extends AsyncTask<Payload, DownloadProgress, Pay
 		try {
 			HTTPConnectionUtils client = new HTTPConnectionUtils(ctx);
 
-			String url =  client.createUrlWithCredentials(dm.getDownloadUrl());
-
+			String urlBase =  client.createUrlWithCredentials(dm.getDownloadUrl());
+			String url = urlBase;
+			//
+			if(urlBase.contains("ip-172-31-19-141.eu-west-1.compute.internal")){
+				url= urlBase.replace("ip-172-31-19-141.eu-west-1.compute.internal", "52.17.123.50");	
+			}
+			
+			Log.d(TAG, "Download course url: " +url);
 			String v = "0";
 			try {
 				v = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0).versionName;

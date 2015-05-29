@@ -92,7 +92,7 @@ public class MobileLearning extends Application {
 	public static final String UJJWAL_COMPONENT_TAG = "BRIGHT_FUTURE_COMPONENT_TAG";
 	public static final int MOBILE_LEARNING_COMPONENT = 1;
 	public static final int CLIENT_COUNSELLING_COMPONENT = 2;
-	public static final String CLIENT_COUNSELLING_COURSES = "'us-counsel','us-benefits','us-detect','us-limiting','us-malefocused','us-postabort','us-postpartum','us-spacing','us-unprotected'";
+	public static final String CLIENT_COUNSELLING_COURSES = "'mcounseling','us-counsel','us-benefits','us-detect','us-limiting','us-malefocused','us-postabort','us-postpartum','us-spacing','us-unprotected'";
 	
 	// for tracking if SubmitTrackerMultipleTask is already running
 	public SubmitTrackerMultipleTask omSubmitTrackerMultipleTask = null;
