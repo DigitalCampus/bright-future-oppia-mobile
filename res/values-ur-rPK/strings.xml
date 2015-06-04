@@ -293,4 +293,6 @@
     <string name="client_tracker">Client Tracker info being sent</string>
     <string name="client_registration_label">کلائنٹ رجسٹر</string>
 
+    <string name="menu_share">بانٹیں</string>
+    
 </resources>

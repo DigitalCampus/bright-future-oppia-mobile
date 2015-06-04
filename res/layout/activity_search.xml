@@ -4,27 +4,29 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:padding="10dp" >
 
         <EditText
             android:id="@+id/search_string"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_toLeftOf="@+id/searchbutton"
-            android:inputType="text"/>
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/searchbutton"
+            android:layout_weight="1"
+            android:inputType="text" />
 
         <ImageView
             android:id="@+id/searchbutton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:layout_weight="0.18"
             android:src="@drawable/abs__ic_search" />
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/search_results_summary"

@@ -28,6 +28,7 @@ import org.digitalcampus.oppia.adapter.ActivityPagerAdapter;
 import org.digitalcampus.oppia.adapter.SectionListAdapter;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
+import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.model.Activity;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.model.Section;
@@ -38,10 +39,10 @@ import org.digitalcampus.oppia.widgets.PageWidget;
 import org.digitalcampus.oppia.widgets.QuizWidget;
 import org.digitalcampus.oppia.widgets.ResourceWidget;
 import org.digitalcampus.oppia.widgets.WidgetFactory;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -50,6 +51,7 @@ import android.speech.tts.UtteranceProgressListener;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
@@ -76,7 +78,6 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 
 	private ViewPager viewPager;
 	private ActivityPagerAdapter apAdapter;
-
 	
 	@SuppressWarnings("unchecked")
 	@Override
@@ -243,6 +244,26 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 		switch (item.getItemId()) {
 		case R.id.menu_language:
 			createLanguageDialog();
+			return true;
+		case R.id.menu_share:
+			String videoName = activities.get(actionBar.getTabCount()-1).getMedia().get(0).getFilename();
+			try{
+				if(videoName != null) {
+				Intent in = new Intent(Intent.ACTION_SEND);
+				Log.d(TAG, "Path to video file: "+Uri.parse("file://"+MobileLearning.MEDIA_PATH+videoName));
+				in.setType("video/*");
+			    in.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+MobileLearning.MEDIA_PATH+videoName));
+		        in.putExtra(Intent.EXTRA_TEXT,
+		                "" + getResources().getString(R.string.app_name));
+		        startActivity(Intent.createChooser(in,getResources().getString(R.string.app_name)));
+				}
+				else {
+					UIUtils.showAlert(this, R.string.error, R.string.error_media_not_found);
+				}
+			}
+			catch(Exception e) {
+				
+			}
 			return true;
 		case R.id.menu_help:
 			Bundle tb = new Bundle();

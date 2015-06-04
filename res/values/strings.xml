@@ -292,5 +292,7 @@
     <string name="client_data_sync">Client Data sync in progress</string>
     <string name="client_tracker">Client Tracker info being sent</string>
     <string name="client_registration_label">Client Registration</string>
+    
+    <string name="menu_share">Share</string>
 
 </resources>
