@@ -291,12 +291,13 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 	public void clientDataSyncComplete(Payload response) {
 		dialog.dismiss();
 	    Intent i = new Intent(ClientInfoActivity.this, ClientListActivity.class);
+	    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         Bundle tb = new Bundle();
         tb.putBoolean("closeClientCase", true);
         tb.putBoolean("editClient", true);
         tb.putLong("localClientID", client.getClientId());
         i.putExtras(tb);
-        startActivityForResult(i, 1);
+        startActivity(i);
         ClientInfoActivity.this.finish();
 	}
 
