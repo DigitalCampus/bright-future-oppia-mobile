@@ -41,6 +41,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
@@ -52,7 +53,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	static final String TAG = DbHelper.class.getSimpleName();
 	static final String DB_NAME = "bright-future.db";
-	static final int DB_VERSION = 20;
+	static final int DB_VERSION = 21;
 
 	private static SQLiteDatabase db;
 
@@ -138,6 +139,8 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CLIENT_C_HEALTHWORKER = "clienthealthworker";
     private static final String CLIENT_C_HUSBANDNAME = "clienthusbandname";
     private static final String CLIENT_C_METHODNAME = "clientmethodname";
+    private static final String CLIENT_CLOSE_CASE = "clientclosecase";
+    private static final String CLIENT_DELETE_RECORD = "clientdeleterecord";
 
     // string constants for database client table
     private static final String CLIENT_TRACKER_TABLE = "clienttracker";
@@ -396,6 +399,25 @@ public class DbHelper extends SQLiteOpenHelper {
             try {
                 db.execSQL(sql);
             } catch (Exception e){
+            }
+        }
+        
+        if(oldVersion <= 20 && newVersion >= 21){
+
+            db.execSQL("DROP TABLE IF EXISTS " + CLIENT_TRACKER_TABLE);
+            this.createClientTrackerTable(db);
+
+            String sql = "ALTER TABLE " + CLIENT_TABLE + " ADD COLUMN " + CLIENT_CLOSE_CASE + " integer default 0;";
+            try {
+                db.execSQL(sql);
+            } catch (SQLiteException e){
+            	Log.d(TAG, e.getMessage());
+            }
+            sql = "ALTER TABLE " + CLIENT_TABLE + " ADD COLUMN " + CLIENT_DELETE_RECORD + " integer default 0;";
+            try {
+                db.execSQL(sql);
+            } catch (SQLiteException e){
+            	Log.d(TAG, e.getMessage());
             }
         }
     }
@@ -1495,6 +1517,9 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(CLIENT_C_AGEYOUNGESTCHILD, client.getAgeYoungestChild());
         values.put(CLIENT_C_METHODNAME, client.getMethodName());
         values.put(CLIENT_C_HUSBANDNAME, client.getHusbandName());
+        
+        values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
+        values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
 
         db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);
     }

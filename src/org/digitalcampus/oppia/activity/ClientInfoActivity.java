@@ -7,14 +7,19 @@ import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
+import org.digitalcampus.oppia.listener.ClientDataSyncListener;
 import org.digitalcampus.oppia.model.Client;
 import org.digitalcampus.oppia.model.ClientSession;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.service.TrackerService;
+import org.digitalcampus.oppia.task.ClientDataSyncTask;
+import org.digitalcampus.oppia.task.Payload;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -26,14 +31,14 @@ import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-public class ClientInfoActivity extends AppActivity {
+public class ClientInfoActivity extends AppActivity implements ClientDataSyncListener {
     public static final String TAG = ClientInfoActivity.class.getSimpleName();
     private DbHelper db;
     private Client client;
     private Context ctx;
     private SharedPreferences prefs;
     private AlertDialog aDialog;
-    private ArrayList<Course> courses = new ArrayList<Course>() ;
+    //private ArrayList<Course> courses = new ArrayList<Course>() ;
     private TextView clientNameTextView;
     private TextView clientMobileTextView;
     private TextView clientGenderTextView;
@@ -45,7 +50,9 @@ public class ClientInfoActivity extends AppActivity {
     private TextView clientHusbandNameTextView, clientMethodNameTextView;
     private RelativeLayout clientChildAgeRelativeLayout, husbandNameRelativeLayout, methodNameRelativeLayout;
     private Button makeVisitButton, editClientInfoButton, makeCallButton;//button_client_edit
-
+    private Button closeCase, deleteClient;
+    private ProgressDialog dialog;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +82,55 @@ public class ClientInfoActivity extends AppActivity {
         clientChildAgeRelativeLayout = (RelativeLayout) findViewById(R.id.child_age_layout);
         husbandNameRelativeLayout = (RelativeLayout) findViewById(R.id.husband_name_layout);
         methodNameRelativeLayout = (RelativeLayout) findViewById(R.id.method_name_layout);
+        
+        closeCase = (Button) findViewById(R.id.close_client_case);
+        deleteClient = (Button) findViewById(R.id.delete_client_record);
+        
+        closeCase.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				new AlertDialog.Builder(ctx)
+			    .setTitle("Close Client Case")
+			    .setMessage("Are you sure you want to close this client?")
+			    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int which) { 
+			            // continue with close case
+			        	closeCase.setEnabled(false);
+						client.setClientCloseCase(1);
+		                db.addOrUpdateClient(client);
+						MobileLearning app = (MobileLearning) ctx.getApplicationContext();
+		                if (app.omSubmitClientTrackerTask == null) {
+		                    Log.d(TAG,"Syncing and updating client task");
+		                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
+		                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
+		                    app.omSubmitClientSyncTask.execute();
+		                }
+			        }
+			     })
+			    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+			        public void onClick(DialogInterface dialog, int which) { 
+			            // do nothing
+			        }
+			     })
+			    .setIcon(android.R.drawable.ic_dialog_alert)
+			    .show();
+			}
+		});
+        
+        deleteClient.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				client.setClientDeleteRecord(1);
+                db.addOrUpdateClient(client);
+                Intent i = new Intent(ClientInfoActivity.this, ClientListActivity.class);
+                Bundle tb = new Bundle();
+                tb.putBoolean("deleteClientRecord", true);
+                tb.putLong("localClientID", client.getClientId());
+                i.putExtras(tb);
+                startActivity(i);
+                ClientInfoActivity.this.finish();
+			}
+		});
 
         makeVisitButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -230,4 +286,23 @@ public class ClientInfoActivity extends AppActivity {
         }
         editor.commit();
     }
+
+	@Override
+	public void clientDataSyncComplete(Payload response) {
+		dialog.dismiss();
+	    Intent i = new Intent(ClientInfoActivity.this, ClientListActivity.class);
+        Bundle tb = new Bundle();
+        tb.putBoolean("closeClientCase", true);
+        tb.putBoolean("editClient", true);
+        tb.putLong("localClientID", client.getClientId());
+        i.putExtras(tb);
+        startActivityForResult(i, 1);
+        ClientInfoActivity.this.finish();
+	}
+
+	@Override
+	public void clientDataSyncProgress() {
+		dialog = ProgressDialog.show(ctx, "Closing Case",
+			    "Please wait", true);
+	}
 }

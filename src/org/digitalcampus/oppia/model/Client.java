@@ -19,8 +19,27 @@ public class Client implements Serializable, SearchOutput{
 
     private String healthWorker; // User or ASHA worker
     private long clientServerId;
+    
+    private int clientCloseCase;
+    private int clientDeleteRecord;
+    
+    public int getClientCloseCase() {
+		return clientCloseCase;
+	}
 
-    public String getMethodName() {
+	public void setClientCloseCase(int clientCloseCase) {
+		this.clientCloseCase = clientCloseCase;
+	}
+
+	public int getClientDeleteRecord() {
+		return clientDeleteRecord;
+	}
+
+	public void setClientDeleteRecord(int clientDeleteRecord) {
+		this.clientDeleteRecord = clientDeleteRecord;
+	}
+
+	public String getMethodName() {
         return methodName;
     }
 

@@ -166,4 +166,9 @@ public class StatsFragment extends Fragment implements TrackerServiceListener, C
 		this.updateSent();
 		this.updateUnsent();	
 	}
+
+	@Override
+	public void clientDataSyncProgress() {
+		//do nothing
+	}
 }
