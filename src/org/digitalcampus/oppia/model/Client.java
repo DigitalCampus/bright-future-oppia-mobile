@@ -21,9 +21,9 @@ public class Client implements Serializable, SearchOutput{
     private long clientServerId;
     
     private int clientCloseCase;
-    private int clientDeleteRecord;
-    
-    public int getClientCloseCase() {
+	private int clientDeleteRecord;
+
+ 	public int getClientCloseCase() {
 		return clientCloseCase;
 	}
 
