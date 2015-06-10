@@ -340,12 +340,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 		if(dialog != null){
 			dialog.dismiss();
 		}
-		if(isButtonDeleteClient) {
-			//UIUtils.showAlert(ctx, "Delete Client", "Client has been deleted");
-		}
-		else {
-			//UIUtils.showAlert(ctx, "Close Case", "Client case has been closed");
-		}
+		
 	    Intent i = new Intent(ClientInfoActivity.this, ClientListActivity.class);
 	    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         Bundle tb = new Bundle();
