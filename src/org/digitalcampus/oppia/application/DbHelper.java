@@ -1178,7 +1178,11 @@ public class DbHelper extends SQLiteOpenHelper {
 		values.put(SEARCH_C_COURSETITLE, courseTitle);
 		values.put(SEARCH_C_SECTIONTITLE, sectionTitle);
 		values.put(SEARCH_C_ACTIVITYTITLE, activityTitle);
-		db.insertOrThrow(SEARCH_TABLE, null, values);
+		try {
+			db.insertOrThrow(SEARCH_TABLE, null, values);
+		}catch(Exception e){
+			
+		}
 	}
 	
 	/*
@@ -1393,7 +1397,8 @@ public class DbHelper extends SQLiteOpenHelper {
         String sql = "SELECT * FROM  "+ CLIENT_TABLE +
                 " WHERE " + CLIENT_C_HEALTHWORKER + " = ? AND (" +
                 CLIENT_C_SERVER_ID + " is null or " + CLIENT_C_MODIFIED_DATE + " > " +
-                Long.toString(previousSyncTime) + ");";
+                Long.toString(previousSyncTime) + " or " + CLIENT_DELETE_RECORD + " > 0 "+ 
+                " or "+ CLIENT_CLOSE_CASE + " > 0 " + ");";
 
         Cursor c = db.rawQuery(sql,new String[] { userName });
         c.moveToFirst();
@@ -1414,6 +1419,9 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setAgeYoungestChild(c.getInt(c.getColumnIndex(CLIENT_C_AGEYOUNGESTCHILD)));
             client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
+            
+            client.setClientDeleteRecord(c.getInt(c.getColumnIndex(CLIENT_DELETE_RECORD)));
+            client.setClientCloseCase(c.getInt(c.getColumnIndex(CLIENT_CLOSE_CASE)));
 
             clients.add(client);
             c.moveToNext();
@@ -1530,6 +1538,15 @@ public class DbHelper extends SQLiteOpenHelper {
         db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);
     }
 
+    public void updateClientAfterSync(Client client){
+        ContentValues values;
+        values = new ContentValues();
+        
+        values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
+        values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
+
+        db.update(CLIENT_TABLE, values, CLIENT_C_SERVER_ID + "=" + client.getClientServerId(), null);
+    }
 //    deleting clients newly created clients and replacing them with registered clients
     public void deleteUnregisteredClients(long clientId){
         String s = CLIENT_C_ID+"=?";

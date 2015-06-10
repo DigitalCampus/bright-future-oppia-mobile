@@ -104,9 +104,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 				        	closeCase.setEnabled(false);
 				        	db = new DbHelper(ctx);
 							client.setClientCloseCase(1);
-			                db.addOrUpdateClient(client);
-			                
-							MobileLearning app = (MobileLearning) ctx.getApplicationContext();
+							db.updateClientAfterSync(client);
+			                MobileLearning app = (MobileLearning) ctx.getApplicationContext();
 			                if (app.omSubmitClientTrackerTask == null) {
 			                    Log.d(TAG,"Syncing and updating client task");
 			                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
@@ -148,10 +147,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 				        	isButtonDeleteClient = true;
 				        	deleteClient.setEnabled(false);
 				        	db = new DbHelper(ctx);
-				        	client.setClientId(clientId);
-							client.setClientServerId(db.getClient(clientId).getClientServerId());
-							client.setClientDeleteRecord(1);
-							db.addOrUpdateClient(client);
+				        	client.setClientDeleteRecord(1);
+							db.updateClientAfterSync(client);
 							MobileLearning app = (MobileLearning) ctx.getApplicationContext();
 			                if (app.omSubmitClientTrackerTask == null) {
 			                    Log.d(TAG,"Syncing and updating client task");
@@ -364,7 +361,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 		String header;
 		if(isButtonDeleteClient) {
 			header="Deleting Client";
-			db.deleteUnregisteredClients(client.getClientId());
+			//db.deleteUnregisteredClients(client.getClientId());
 		}
 		else {
 			header="Closing Case";

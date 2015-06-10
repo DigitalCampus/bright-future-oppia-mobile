@@ -83,9 +83,9 @@ public class ClientDataSyncTask extends AsyncTask<Payload, Object, Payload> {
                 case 201: // logged in
                     ClientDTO clientDTO2 = mapper.readValue(responseStr,ClientDTO.class);
 
-//                    for (Client client1: clients) {
-//                        db.deleteUnregisteredClients(client1.getClientId());
-//                    }
+                    for (Client client1: clients) {
+                        db.deleteUnregisteredClients(client1.getClientId());
+                    }
                     ArrayList<Client> clients2 = clientDTO2.getClients();
                     db.addOrUpdateClientAfterSync(clients2);
                     db.updateClientSession(clients2);
