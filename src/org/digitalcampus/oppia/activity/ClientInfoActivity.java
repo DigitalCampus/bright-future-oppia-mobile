@@ -54,7 +54,6 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     private Button closeCase, deleteClient;
     private ProgressDialog dialog;
     private boolean isButtonDeleteClient;
-    private long clientId;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,7 +117,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 			                }
 				        }
 			        	else {
-			        		//client is not synched, can't close. Please try after some time. 
+			        		//client is not synced, can't close. Please try after some time. 
 			        		UIUtils.showAlert(ctx, "Can't close", "Please try after some time");
 			        	}
 			        }
@@ -162,7 +161,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 			                }
 				        }
 			        	else {
-			        		// not synched, delete it from local db.
+			        		// not synced, delete it from local db.
 			        		clientDataSyncProgress();
 			        		db.deleteUnregisteredClients(client.getClientId());
 			        		clientDataSyncComplete(null);
