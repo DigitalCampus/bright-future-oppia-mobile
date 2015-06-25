@@ -52,12 +52,13 @@ public class ClientRegActivity extends AppActivity {
     public long clientId;
     public boolean husbandNameRequired, childAgeRequired, methodRequired, genderSpecified, paritySpecified, maritalStatusSpecified;
     private Calendar now = Calendar.getInstance();
+    private Boolean b; 
     
     String clientName, clientPhoneNumber, clientAge, clientGender, clientMarried, clientParity, clientLifeStage, clientHusbandName, clientChildAgeYear, clientChildAgeMonth;
     String usingMethod, methodName;
     ArrayAdapter<CharSequence> cwfadapter, cwfadapter2, cwfadapter3, cwfadapter4, cwfadapter5, cwfadapter6;
     DbHelper db;
-
+    String adaptedMethodName;
     
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -65,7 +66,9 @@ public class ClientRegActivity extends AppActivity {
 		setContentView(R.layout.activity_clientreg);
         context = this;
         genderSpecified = paritySpecified = maritalStatusSpecified = false;
-
+        Intent intent = getIntent();
+        Bundle bundle=intent.getExtras();
+        b = bundle.getBoolean("editClient");
         sexSpinner = (Spinner) findViewById(R.id.clientreg_form_sex_spinner);
         marriedSpinner = (Spinner) findViewById(R.id.clientreg_form_married_spinner);
         paritySpinner = (Spinner) findViewById(R.id.clientreg_form_parity_spinner);
@@ -269,7 +272,8 @@ public class ClientRegActivity extends AppActivity {
                 clientHusbandName = (String) husbandNameClientEditText.getText().toString().trim();
                 clientChildAgeYear = (String) youngestChildAgeYearClientEditText.getText().toString().trim();
                 clientChildAgeMonth = (String) youngestChildAgeMonthClientEditText.getText().toString().trim();
-
+                adaptedMethodName = (String) methodNameSpinner.getSelectedItem().toString(); // change later.
+                
         		String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH))+
         				String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
         				String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
@@ -321,9 +325,9 @@ public class ClientRegActivity extends AppActivity {
                     if (methodRequired) {
                         client.setMethodName(methodName);
                     }
-                    Intent intent = getIntent();
-                    Bundle bundle=intent.getExtras();
-                    Boolean b = bundle.getBoolean("editClient");
+
+                    client.setAdaptedMethodName(adaptedMethodName);
+                    
                     if (b != null && b) {
                         client.setClientId(clientId);
                         client.setClientServerId(db.getClient(clientId).getClientServerId());

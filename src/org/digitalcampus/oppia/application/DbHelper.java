@@ -141,6 +141,8 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CLIENT_C_METHODNAME = "clientmethodname";
     private static final String CLIENT_CLOSE_CASE = "clientclosecase";
     private static final String CLIENT_DELETE_RECORD = "clientdeleterecord";
+    private static final String CLIENT_ADAPTED_METHOD_NAME="clientadaptedmethodname";
+    private static final String CLIENT_ADAPTED_METHOD_TIME="clientadaptedmethodtime";
 
     // string constants for database clienttracker table
     private static final String CLIENT_TRACKER_TABLE = "clienttracker";
@@ -256,7 +258,9 @@ public class DbHelper extends SQLiteOpenHelper {
                 "["+CLIENT_C_HUSBANDNAME+"] TEXT null , "+
                 "["+CLIENT_C_METHODNAME+"] TEXT null  ,"+
                 "["+CLIENT_CLOSE_CASE+"] integer default 0 ,"+
-                "["+CLIENT_DELETE_RECORD+"] integer default 0 "+
+                "["+CLIENT_DELETE_RECORD+"] integer default 0 ,"+
+                "["+CLIENT_ADAPTED_METHOD_NAME+"] TEXT null ,"+
+                "["+CLIENT_ADAPTED_METHOD_TIME+"] integer "+
                 ");";
         db.execSQL(sql);
     }
@@ -414,6 +418,18 @@ public class DbHelper extends SQLiteOpenHelper {
             } catch (Exception e){
             	Log.d(TAG, e.getMessage());
             }
+            sql = "ALTER TABLE " + CLIENT_TABLE + " ADD COLUMN " + CLIENT_ADAPTED_METHOD_NAME + " TEXT null;";
+            try {
+                db.execSQL(sql);
+            } catch (Exception e){
+            	Log.d(TAG, e.getMessage());
+            }
+            sql = "ALTER TABLE " + CLIENT_TABLE + " ADD COLUMN " + CLIENT_ADAPTED_METHOD_TIME + " integer;";
+            try {
+                db.execSQL(sql);
+            } catch (Exception e){
+            	Log.d(TAG, e.getMessage());
+            }
         }
         if(oldVersion <= 20 && newVersion >= 21){
         	 db.execSQL("DROP TABLE IF EXISTS " + CLIENT_TABLE);
@@ -508,6 +524,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
         values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
+        values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+        values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
         
         Log.v(TAG, "Client Record added");
         return db.insertOrThrow(CLIENT_TABLE, null, values);
@@ -864,7 +882,8 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
             client.setClientDeleteRecord(c.getInt(c.getColumnIndex(CLIENT_DELETE_RECORD)));
             client.setClientCloseCase(c.getInt(c.getColumnIndex(CLIENT_CLOSE_CASE)));
-
+            client.setAdaptedMethodName(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME)));
+     
             clients.add(client);
             c.moveToNext();
         }
@@ -1422,7 +1441,9 @@ public class DbHelper extends SQLiteOpenHelper {
             
             client.setClientDeleteRecord(c.getInt(c.getColumnIndex(CLIENT_DELETE_RECORD)));
             client.setClientCloseCase(c.getInt(c.getColumnIndex(CLIENT_CLOSE_CASE)));
-
+            
+            client.setAdaptedMethodName(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME)));
+            
             clients.add(client);
             c.moveToNext();
         }
@@ -1450,6 +1471,8 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(CLIENT_C_HUSBANDNAME, client.getHusbandName());
             values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
             values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
+            values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+            values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
             
             if (client.getClientId() == -1) {
                 long localId = isClientSyncedWithServer(client.getClientServerId(), client.getHealthWorker());
@@ -1534,6 +1557,9 @@ public class DbHelper extends SQLiteOpenHelper {
         
         values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
+        
+        values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+        values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
 
         db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);
     }

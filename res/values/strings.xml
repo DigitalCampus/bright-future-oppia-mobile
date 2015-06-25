@@ -294,5 +294,6 @@
     <string name="client_registration_label">Client Registration</string>
     
     <string name="menu_share">Share</string>
+    <string name="clientreg_method_adapted_title">Adapted Method</string>
 
 </resources>

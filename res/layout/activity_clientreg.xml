@@ -149,8 +149,9 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-                android:id="@+id/clientreg_form_lifestage_spinner"
-                android:layout_width="fill_parent"
+
+            android:id="@+id/clientreg_form_lifestage_spinner"
+            android:layout_width="fill_parent"
             <TextView
                 android:id="@+id/clientreg_form_using_method_title"
                 android:layout_width="fill_parent"
@@ -171,6 +172,24 @@
                 android:layout_height="wrap_content"
                 android:clickable="false"/>
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/adapted_method_layout"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:orientation="vertical" >
+            <TextView
+                android:id="@+id/adapted_method_text"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/clientreg_method_adapted_title" />
+            <Spinner
+                android:id="@+id/adapted_method_spinner"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false" />
         </LinearLayout>
 
         <Button
