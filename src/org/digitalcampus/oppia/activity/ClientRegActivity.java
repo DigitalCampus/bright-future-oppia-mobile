@@ -39,26 +39,31 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 
 public class ClientRegActivity extends AppActivity {
 	
 	public static final String TAG = ClientRegActivity.class.getSimpleName();
 	private SharedPreferences prefs;
-    private Spinner sexSpinner, marriedSpinner, paritySpinner, plsSpinner,usingMethodSpinner,methodNameSpinner;
+    private Spinner sexSpinner, marriedSpinner, paritySpinner, plsSpinner,usingMethodSpinner,methodNameSpinner, adaptedMethodNameSpinner;
     private Button counsellingButton;
     private EditText nameClientEditText, phoneNumberClientEditText, ageClientEditText, husbandNameClientEditText, youngestChildAgeYearClientEditText, youngestChildAgeMonthClientEditText;
     private Context context;
     public long clientId;
     public boolean husbandNameRequired, childAgeRequired, methodRequired, genderSpecified, paritySpecified, maritalStatusSpecified;
     private Calendar now = Calendar.getInstance();
-    private Boolean b; 
+    private Boolean isEditClient; 
     
     String clientName, clientPhoneNumber, clientAge, clientGender, clientMarried, clientParity, clientLifeStage, clientHusbandName, clientChildAgeYear, clientChildAgeMonth;
     String usingMethod, methodName;
-    ArrayAdapter<CharSequence> cwfadapter, cwfadapter2, cwfadapter3, cwfadapter4, cwfadapter5, cwfadapter6;
+    ArrayAdapter<CharSequence> cwfadapter, cwfadapter2, cwfadapter3, cwfadapter4, cwfadapter5, cwfadapter6, cwfadapter7;
     DbHelper db;
     String adaptedMethodName;
+    private LinearLayout methodNameLayout, adaptedMethodLayout;
+	private String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH))+
+			String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
+			String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
     
     @Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,14 +73,15 @@ public class ClientRegActivity extends AppActivity {
         genderSpecified = paritySpecified = maritalStatusSpecified = false;
         Intent intent = getIntent();
         Bundle bundle=intent.getExtras();
-        b = bundle.getBoolean("editClient");
+        isEditClient = bundle.getBoolean("editClient");
         sexSpinner = (Spinner) findViewById(R.id.clientreg_form_sex_spinner);
         marriedSpinner = (Spinner) findViewById(R.id.clientreg_form_married_spinner);
         paritySpinner = (Spinner) findViewById(R.id.clientreg_form_parity_spinner);
         plsSpinner = (Spinner) findViewById(R.id.clientreg_form_lifestage_spinner);
         usingMethodSpinner = (Spinner) findViewById(R.id.clientreg_form_using_method_spinner);
         methodNameSpinner = (Spinner) findViewById(R.id.clientreg_form_method_name_spinner);
-
+        adaptedMethodNameSpinner = (Spinner) findViewById(R.id.adapted_method_spinner);
+        
         counsellingButton = (Button) findViewById(R.id.submit_btn);
         nameClientEditText = (EditText) findViewById(R.id.clientreg_form_name_field);
         phoneNumberClientEditText = (EditText) findViewById(R.id.clientreg_form_mobile_field);
@@ -90,9 +96,6 @@ public class ClientRegActivity extends AppActivity {
 		PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
 
 		//disable client name & phone number & husband name as per client request
-		String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH))+
-				String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
-				String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
 		nameClientEditText.setText(prefs.getString("prefUsername", "")+"Client"+toAppendClientName);
 		phoneNumberClientEditText.setText("99999999999");
 		husbandNameClientEditText.setText("");
@@ -141,6 +144,12 @@ public class ClientRegActivity extends AppActivity {
         cwfadapter6.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         // Apply the adapter to the spinner
         methodNameSpinner.setAdapter(cwfadapter6);
+       
+        //Adapted method name spinner
+        cwfadapter7 = ArrayAdapter.createFromResource(this,
+                R.array.methodName, android.R.layout.simple_spinner_item);
+        cwfadapter7.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        adaptedMethodNameSpinner.setAdapter(cwfadapter7);
 
         db = new DbHelper(context);
         
@@ -272,13 +281,8 @@ public class ClientRegActivity extends AppActivity {
                 clientHusbandName = (String) husbandNameClientEditText.getText().toString().trim();
                 clientChildAgeYear = (String) youngestChildAgeYearClientEditText.getText().toString().trim();
                 clientChildAgeMonth = (String) youngestChildAgeMonthClientEditText.getText().toString().trim();
-                adaptedMethodName = (String) methodNameSpinner.getSelectedItem().toString(); // change later.
+                adaptedMethodName = (String) adaptedMethodNameSpinner.getSelectedItem().toString(); 
                 
-        		String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH))+
-        				String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
-        				String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
-
-
                 if (sexSpinner.getSelectedItemPosition() == 1) {
                     if (marriedSpinner.getSelectedItemPosition() == 1) {
                         husbandNameRequired = true;
@@ -304,8 +308,13 @@ public class ClientRegActivity extends AppActivity {
                     //client.setClientName(clientName);
                     //client.setClientMobileNumber(Long.parseLong(clientPhoneNumber));
                     // name,phone, sex & husbandName auto generating as per client request, can changeable later.
-                    client.setClientName(prefs.getString("prefUsername", "")+"Client"+toAppendClientName);
-                    client.setClientMobileNumber(Long.parseLong("99999999999")); 
+                    if (isEditClient != null && isEditClient) {
+                    	client.setClientName(clientName);
+                    }
+                    else {
+                    	client.setClientName(prefs.getString("prefUsername", "")+"Client"+toAppendClientName);
+                    }
+                   	client.setClientMobileNumber(Long.parseLong("99999999999"));
                     client.setClientAge(Integer.parseInt(clientAge));
                     client.setClientGender(clientGender);
                     client.setClientMaritalStatus(clientMarried);
@@ -320,15 +329,23 @@ public class ClientRegActivity extends AppActivity {
                     if (husbandNameRequired) {
                     	// name,phone, sex & husbandName auto generating as per client request, can changeable later.
                         //client.setHusbandName(clientHusbandName);
-                    	client.setHusbandName("Clinet"+toAppendClientName+"Husband");
+                    	if (isEditClient != null && isEditClient) {
+                    		client.setHusbandName(clientHusbandName);
+                    	}
+                    	else {
+                    		client.setHusbandName("Clinet"+toAppendClientName+"Husband");
+                    	}
                     }
                     if (methodRequired) {
                         client.setMethodName(methodName);
                     }
 
                     client.setAdaptedMethodName(adaptedMethodName);
+				    Intent intent = getIntent();
+                    Bundle bundle=intent.getExtras();
+                    isEditClient = bundle.getBoolean("editClient");
                     
-                    if (b != null && b) {
+                    if (isEditClient != null && isEditClient) {
                         client.setClientId(clientId);
                         client.setClientServerId(db.getClient(clientId).getClientServerId());
                         db.addOrUpdateClient(client);
@@ -361,7 +378,9 @@ public class ClientRegActivity extends AppActivity {
         Intent intent = getIntent();
         Bundle bundle=intent.getExtras();
         clientId = bundle.getLong("localClientID");
-//        long clientId = prefs.getLong("prefClientLocalID", 0L);
+        //long clientId = prefs.getLong("prefClientLocalID", 0L);
+        isEditClient = bundle.getBoolean("editClient");
+        
         if (clientId > 0) {
             Client client = db.getClient(clientId);
             nameClientEditText.setText(client.getClientName());
@@ -376,19 +395,33 @@ public class ClientRegActivity extends AppActivity {
             paritySpinner.setSelection(spinnerPosition);
             spinnerPosition = cwfadapter4.getPosition(client.getClientLifeStage());
             plsSpinner.setSelection(spinnerPosition);
-            if (client.getMethodName() != null && client.getMethodName().length() != 0) {
-                usingMethodSpinner.setSelection(1);
-                spinnerPosition = cwfadapter6.getPosition(client.getMethodName());
-                methodNameSpinner.setSelection(spinnerPosition);
-                methodNameSpinner.setEnabled(true);
-                methodNameSpinner.setClickable(true);
-            } else {
-                usingMethodSpinner.setSelection(0);
-                methodNameSpinner.setSelection(0);
-                methodNameSpinner.setEnabled(false);
-                methodNameSpinner.setClickable(false);
+            methodNameLayout = (LinearLayout)findViewById(R.id.if_using_method_layout);
+            adaptedMethodLayout= (LinearLayout)findViewById(R.id.adapted_method_layout);
+            
+            if(isEditClient!=null && isEditClient) {
+            	methodNameLayout.setVisibility(View.GONE);
+            	adaptedMethodLayout.setVisibility(View.VISIBLE);
+            	spinnerPosition = cwfadapter7.getPosition(client.getAdaptedMethodName());
+                adaptedMethodNameSpinner.setSelection(spinnerPosition);
+            	adaptedMethodNameSpinner.setEnabled(true);
+            	adaptedMethodNameSpinner.setClickable(true);
             }
-
+            else {
+            	methodNameLayout.setVisibility(View.VISIBLE);
+            	adaptedMethodLayout.setVisibility(View.GONE);
+	            if (client.getMethodName() != null && client.getMethodName().length() != 0) {
+	                usingMethodSpinner.setSelection(1);
+	                spinnerPosition = cwfadapter6.getPosition(client.getMethodName());
+	                methodNameSpinner.setSelection(spinnerPosition);
+	                methodNameSpinner.setEnabled(true);
+	                methodNameSpinner.setClickable(true);
+	            } else {
+	                usingMethodSpinner.setSelection(0);
+	                methodNameSpinner.setSelection(0);
+	                methodNameSpinner.setEnabled(false);
+	                methodNameSpinner.setClickable(false);
+	            }
+            }
             husbandNameClientEditText.setText(client.getHusbandName());
 
             if (client.getAgeYoungestChild() / 12 != 0) {

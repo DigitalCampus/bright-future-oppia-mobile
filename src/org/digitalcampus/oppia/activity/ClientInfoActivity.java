@@ -48,8 +48,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     private TextView clientParityTextView;
     private TextView clientLifeStageTextView;
     private TextView clientChildAgeTextView;
-    private TextView clientHusbandNameTextView, clientMethodNameTextView;
-    private RelativeLayout clientChildAgeRelativeLayout, husbandNameRelativeLayout, methodNameRelativeLayout;
+    private TextView clientHusbandNameTextView, clientMethodNameTextView, adaptedMethodNameTextView;
+    private RelativeLayout clientChildAgeRelativeLayout, husbandNameRelativeLayout, methodNameRelativeLayout, AdaptedethodNameRelativeLayout;
     private Button makeVisitButton, editClientInfoButton, makeCallButton;//button_client_edit
     private Button closeCase, deleteClient;
     private ProgressDialog dialog;
@@ -76,6 +76,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         clientChildAgeTextView = (TextView) findViewById(R.id.client_youngest_child_age_value);
         clientHusbandNameTextView = (TextView) findViewById(R.id.client_husband_value);
         clientMethodNameTextView = (TextView) findViewById(R.id.client_method_name_value);
+        adaptedMethodNameTextView = (TextView) findViewById(R.id.adapted_method_name_value);
 
         makeVisitButton = (Button) findViewById(R.id.client_detail_visit_button);
         editClientInfoButton = (Button) findViewById(R.id.client_edit_info_button);
@@ -84,6 +85,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         clientChildAgeRelativeLayout = (RelativeLayout) findViewById(R.id.child_age_layout);
         husbandNameRelativeLayout = (RelativeLayout) findViewById(R.id.husband_name_layout);
         methodNameRelativeLayout = (RelativeLayout) findViewById(R.id.method_name_layout);
+        AdaptedethodNameRelativeLayout = (RelativeLayout) findViewById(R.id.adapted_method_name_layout);
         
         closeCase = (Button) findViewById(R.id.close_client_case);
         deleteClient = (Button) findViewById(R.id.delete_client_record);
@@ -284,6 +286,13 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         } else {
             methodNameRelativeLayout.setVisibility(View.GONE);
             clientMethodNameTextView.setText("");
+        }
+        if (client.getAdaptedMethodName() != null && client.getAdaptedMethodName().length() != 0) {
+        	AdaptedethodNameRelativeLayout.setVisibility(View.VISIBLE);
+        	adaptedMethodNameTextView.setText(client.getAdaptedMethodName());
+        } else {
+        	AdaptedethodNameRelativeLayout.setVisibility(View.GONE);
+        	adaptedMethodNameTextView.setText("");
         }
     }
 

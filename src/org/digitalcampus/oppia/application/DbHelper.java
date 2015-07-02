@@ -524,7 +524,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
         values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
-        values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+        values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
         values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
         
         Log.v(TAG, "Client Record added");
@@ -882,7 +882,7 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
             client.setClientDeleteRecord(c.getInt(c.getColumnIndex(CLIENT_DELETE_RECORD)));
             client.setClientCloseCase(c.getInt(c.getColumnIndex(CLIENT_CLOSE_CASE)));
-            client.setAdaptedMethodName(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME)));
+            client.setAdaptedMethodName( ( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
      
             clients.add(client);
             c.moveToNext();
@@ -935,7 +935,8 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setAgeYoungestChild(c.getInt(c.getColumnIndex(CLIENT_C_AGEYOUNGESTCHILD)));
             client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
-
+            client.setAdaptedMethodName(( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
+            
             c.moveToNext();
         }
         c.close();
@@ -1301,6 +1302,7 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setAgeYoungestChild(c.getInt(c.getColumnIndex(CLIENT_C_AGEYOUNGESTCHILD)));
             client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
+            client.setAdaptedMethodName(( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
 
             results.add(client);
             c.moveToNext();
@@ -1442,7 +1444,7 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setClientDeleteRecord(c.getInt(c.getColumnIndex(CLIENT_DELETE_RECORD)));
             client.setClientCloseCase(c.getInt(c.getColumnIndex(CLIENT_CLOSE_CASE)));
             
-            client.setAdaptedMethodName(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME)));
+            client.setAdaptedMethodName( ( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"" );
             
             clients.add(client);
             c.moveToNext();
@@ -1471,7 +1473,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(CLIENT_C_HUSBANDNAME, client.getHusbandName());
             values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
             values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
-            values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+            values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
             values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
             
             if (client.getClientId() == -1) {
@@ -1558,7 +1560,7 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
         
-        values.put(CLIENT_ADAPTED_METHOD_NAME, client.getAdaptedMethodName());
+        values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
         values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
 
         db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);

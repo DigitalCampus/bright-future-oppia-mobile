@@ -295,5 +295,7 @@
     
     <string name="menu_share">Share</string>
     <string name="clientreg_method_adapted_title">Adapted Method</string>
+    <string name="close_client_case">Close Case</string>
+    <string name="delete_client_record">Delete Client</string>
 
 </resources>
