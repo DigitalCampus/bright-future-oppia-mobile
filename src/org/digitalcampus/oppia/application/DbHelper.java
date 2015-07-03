@@ -942,6 +942,38 @@ public class DbHelper extends SQLiteOpenHelper {
         c.close();
         return client;
     }
+    
+    /*
+     * get localClient based on clientServerID
+     */
+    public Client getServerClient(long clientServerID){
+    	String s = CLIENT_C_SERVER_ID + "=? ";
+        String[] args = new String[] { Long.toString(clientServerID) };
+        Cursor c = db.query(CLIENT_TABLE, null, s, args, null, null, null);
+        c.moveToFirst();
+        Client client = new Client();
+ 
+        while (c.isAfterLast() == false) {
+            client.setClientId(c.getInt(c.getColumnIndex(CLIENT_C_ID)));
+            client.setClientName(c.getString(c.getColumnIndex(CLIENT_C_NAME)));
+            client.setClientMobileNumber(c.getLong(c.getColumnIndex(CLIENT_C_MOBILENUMBER)));
+            client.setClientGender(c.getString(c.getColumnIndex(CLIENT_C_GENDER)));
+            client.setClientMaritalStatus(c.getString(c.getColumnIndex(CLIENT_C_MARITALSTATUS)));
+            client.setClientAge(c.getInt(c.getColumnIndex(CLIENT_C_AGE)));
+            client.setClientLifeStage(c.getString(c.getColumnIndex(CLIENT_C_LIFESTAGE)));
+            client.setClientParity(c.getString(c.getColumnIndex(CLIENT_C_PARITY)));
+            client.setHealthWorker(c.getString(c.getColumnIndex(CLIENT_C_HEALTHWORKER)));
+            client.setClientServerId(c.getLong(c.getColumnIndex(CLIENT_C_SERVER_ID)));
+            client.setAgeYoungestChild(c.getInt(c.getColumnIndex(CLIENT_C_AGEYOUNGESTCHILD)));
+            client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
+            client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
+            client.setAdaptedMethodName(( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
+            
+            c.moveToNext();
+        }
+        c.close();
+        return client;
+	}
 	
 	public int getSentTrackersCount(long userId){
 		String s = TRACKER_LOG_C_SUBMITTED + "=? AND " + TRACKER_LOG_C_USERID + "=? ";

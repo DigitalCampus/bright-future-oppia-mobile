@@ -224,6 +224,9 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
                 Bundle tb = new Bundle();
                 tb.putBoolean("editClient", true);
                 tb.putLong("localClientID", client.getClientId());
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putLong("prefClientServerID", client.getClientServerId());
+                editor.commit();
                 i.putExtras(tb);
                 startActivity(i);
                 ClientInfoActivity.this.finish();
@@ -249,10 +252,22 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     @Override
     public void onStart() {
         super.onStart();
-
+        Boolean isFromClientReg=false;
+        try {
+	        Intent intent = getIntent();
+	        Bundle bundle=intent.getExtras();
+	        isFromClientReg = bundle.getBoolean("isFromClientReg");
+        }
+        catch(Exception e){
+        	
+        }
         db = new DbHelper(this);
         long clientId = prefs.getLong("prefClientLocalID", 0L);
         client = db.getClient(clientId);
+        if(isFromClientReg!=null && isFromClientReg) {
+        	long clientServerId=prefs.getLong("prefClientServerID", 0L);
+        	client = db.getServerClient(clientServerId);
+        }
         clientNameTextView.setText(client.getClientName());
         clientMobileTextView.setText(Long.toString(client.getClientMobileNumber()));
         clientGenderTextView.setText(client.getClientGender());
