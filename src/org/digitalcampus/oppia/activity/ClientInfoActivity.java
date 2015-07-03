@@ -107,7 +107,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 							client.setClientCloseCase(1);
 							db.updateClientAfterSync(client);
 			                MobileLearning app = (MobileLearning) ctx.getApplicationContext();
-			                if (app.omSubmitClientTrackerTask == null) {
+			                if (app.omSubmitClientSyncTask == null) {
 			                    Log.d(TAG,"Syncing and updating client task");
 			                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
 			                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
@@ -115,7 +115,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 			                }
 			                else {
 			                	// previous data sync is not completed. try after some time.
-			                	//return;
+			                	closeCase.setEnabled(true);
+			                	UIUtils.showAlert(ctx, "Can't Close", "Please try again");
 			                }
 				        }
 			        	else {
@@ -151,7 +152,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 				        	client.setClientDeleteRecord(1);
 							db.updateClientAfterSync(client);
 							MobileLearning app = (MobileLearning) ctx.getApplicationContext();
-			                if (app.omSubmitClientTrackerTask == null) {
+							
+			                if (app.omSubmitClientSyncTask == null) {
 			                    Log.d(TAG,"Syncing and updating client task");
 			                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
 			                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
@@ -159,9 +161,10 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 			                }
 			                else {
 			                	// previous data sync is not completed. try after some time.
-			                	//return;
+			                	deleteClient.setEnabled(true);
+			                	UIUtils.showAlert(ctx, "Can't delete", "Please try again");
 			                }
-				        }
+			        	}
 			        	else {
 			        		// not synced, delete it from local db.
 			        		clientDataSyncProgress();
