@@ -279,7 +279,7 @@
 
                 <TextView
                     android:id="@+id/adapted_method_name_value"
-                    android:layout_width="wrap_content"
+                    android:layout_width="@dimen/client_fields_title_width"
                     android:layout_height="@dimen/client_fields_title_height"
                     android:layout_alignParentEnd="true"
                     android:gravity="end|center_vertical"

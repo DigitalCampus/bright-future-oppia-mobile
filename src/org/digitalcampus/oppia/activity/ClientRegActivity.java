@@ -343,12 +343,18 @@ public class ClientRegActivity extends AppActivity {
                     
                     SharedPreferences.Editor editor = prefs.edit();
                     
-                    if (isEditClient != null && isEditClient) {
+                	if (isEditClient != null && isEditClient) {
                         client.setClientId(clientId);
                         client.setClientServerId(prefs.getLong("prefClientServerID", 0L));
-                        db.addOrUpdateClient(client);
+                        int isNewClient = 0;
+                        if(db.getLastCreatedClientCount() > 0) {
+                        	isNewClient = 1;
+                        }
+                        db.addOrUpdateClient(client, isNewClient);
                         editor.putLong("prefClientServerID", client.getClientServerId());
                     } else {
+                    	//update all old client status to 0.
+                    	db.updateClientCreatedStatus();
                         client.setClientId(db.addClient(client));
                     }
 
@@ -362,6 +368,9 @@ public class ClientRegActivity extends AppActivity {
                     tb.putInt(MobileLearning.UJJWAL_COMPONENT_TAG, MobileLearning.CLIENT_COUNSELLING_COMPONENT);
                     if (isEditClient != null && isEditClient) {
                     	tb.putBoolean("isFromClientReg", true);
+                    }
+                    else {
+                    	tb.putBoolean("isNewClient", true);
                     }
                     i.putExtras(tb);
                     startActivity(i);

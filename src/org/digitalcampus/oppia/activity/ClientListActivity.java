@@ -84,7 +84,7 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
             SharedPreferences.Editor editor = prefs.edit();
             editor.putLong("prefClientLocalID",client.getClientId() );
             editor.commit();
-            startActivity(new Intent(ClientListActivity.this, ClientInfoActivity.class));
+            startActivity(new Intent(ClientListActivity.this, ClientInfoActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
 //            ClientListActivity.this.finish();
             }
         });
@@ -94,7 +94,10 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
     public void onStart() {
         super.onStart();
         db = new DbHelper(this);
-        clients = db.getAllClients(prefs.getString("prefUsername", ""));
+        //update all old client status to 0.
+    	db.updateClientCreatedStatus();
+        
+    	clients = db.getAllClients(prefs.getString("prefUsername", ""));
         DatabaseManager.getInstance().closeDatabase();
         Log.i("info", Integer.toString(clients.size()) );
         if (clients.size() < 1) {

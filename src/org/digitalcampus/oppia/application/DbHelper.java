@@ -143,6 +143,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String CLIENT_DELETE_RECORD = "clientdeleterecord";
     private static final String CLIENT_ADAPTED_METHOD_NAME="clientadaptedmethodname";
     private static final String CLIENT_ADAPTED_METHOD_TIME="clientadaptedmethodtime";
+    private static final String CLIENT_LAST_CREATED="clientlastcreated";
 
     // string constants for database clienttracker table
     private static final String CLIENT_TRACKER_TABLE = "clienttracker";
@@ -260,7 +261,8 @@ public class DbHelper extends SQLiteOpenHelper {
                 "["+CLIENT_CLOSE_CASE+"] integer default 0 ,"+
                 "["+CLIENT_DELETE_RECORD+"] integer default 0 ,"+
                 "["+CLIENT_ADAPTED_METHOD_NAME+"] TEXT null ,"+
-                "["+CLIENT_ADAPTED_METHOD_TIME+"] integer "+
+                "["+CLIENT_ADAPTED_METHOD_TIME+"] integer ,"+
+                "["+CLIENT_LAST_CREATED+"] integer default 0 "+
                 ");";
         db.execSQL(sql);
     }
@@ -430,6 +432,12 @@ public class DbHelper extends SQLiteOpenHelper {
             } catch (Exception e){
             	Log.d(TAG, e.getMessage());
             }
+            sql = "ALTER TABLE " + CLIENT_TABLE + " ADD COLUMN " + CLIENT_LAST_CREATED + " integer default 0;";
+            try {
+                db.execSQL(sql);
+            } catch (Exception e){
+            	Log.d(TAG, e.getMessage());
+            }
         }
         if(oldVersion <= 20 && newVersion >= 21){
         	 db.execSQL("DROP TABLE IF EXISTS " + CLIENT_TABLE);
@@ -526,6 +534,7 @@ public class DbHelper extends SQLiteOpenHelper {
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
         values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
         values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
+        values.put(CLIENT_LAST_CREATED, 1);
         
         Log.v(TAG, "Client Record added");
         return db.insertOrThrow(CLIENT_TABLE, null, values);
@@ -943,6 +952,43 @@ public class DbHelper extends SQLiteOpenHelper {
         return client;
     }
     
+    // return last created client
+    public Client getLastCreatedClient(){
+        String s = CLIENT_LAST_CREATED + "=? ";
+        String[] args = new String[] { Integer.toString(1) };
+        Cursor c = db.query(CLIENT_TABLE, null, s, args, null, null, null);
+        c.moveToFirst();
+        Client client = new Client();
+        while (c.isAfterLast() == false) {
+            client.setClientId(c.getInt(c.getColumnIndex(CLIENT_C_ID)));
+            client.setClientName(c.getString(c.getColumnIndex(CLIENT_C_NAME)));
+            client.setClientMobileNumber(c.getLong(c.getColumnIndex(CLIENT_C_MOBILENUMBER)));
+            client.setClientGender(c.getString(c.getColumnIndex(CLIENT_C_GENDER)));
+            client.setClientMaritalStatus(c.getString(c.getColumnIndex(CLIENT_C_MARITALSTATUS)));
+            client.setClientAge(c.getInt(c.getColumnIndex(CLIENT_C_AGE)));
+            client.setClientLifeStage(c.getString(c.getColumnIndex(CLIENT_C_LIFESTAGE)));
+            client.setClientParity(c.getString(c.getColumnIndex(CLIENT_C_PARITY)));
+            client.setHealthWorker(c.getString(c.getColumnIndex(CLIENT_C_HEALTHWORKER)));
+            client.setClientServerId(c.getLong(c.getColumnIndex(CLIENT_C_SERVER_ID)));
+            client.setAgeYoungestChild(c.getInt(c.getColumnIndex(CLIENT_C_AGEYOUNGESTCHILD)));
+            client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
+            client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
+            client.setAdaptedMethodName(( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
+            c.moveToNext();
+        }
+        c.close();
+        return client;
+    }
+    
+    public int getLastCreatedClientCount(){
+    	String s = CLIENT_LAST_CREATED + "=? ";
+        String[] args = new String[] { Integer.toString(1) };
+        Cursor c = db.query(CLIENT_TABLE, null, s, args, null, null, null);
+		int count = c.getCount();
+		c.close();
+		return count;
+	}
+    
     /*
      * get localClient based on clientServerID
      */
@@ -968,7 +1014,6 @@ public class DbHelper extends SQLiteOpenHelper {
             client.setHusbandName(c.getString(c.getColumnIndex(CLIENT_C_HUSBANDNAME)));
             client.setMethodName(c.getString(c.getColumnIndex(CLIENT_C_METHODNAME)));
             client.setAdaptedMethodName(( (c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0] != null)?(c.getString(c.getColumnIndex(CLIENT_ADAPTED_METHOD_NAME))).split("_")[0]:"");
-            
             c.moveToNext();
         }
         c.close();
@@ -1451,7 +1496,7 @@ public class DbHelper extends SQLiteOpenHelper {
                 " WHERE " + CLIENT_C_HEALTHWORKER + " = ? AND (" +
                 CLIENT_C_SERVER_ID + " is null or " + CLIENT_C_MODIFIED_DATE + " > " +
                 Long.toString(previousSyncTime) + " or " + CLIENT_DELETE_RECORD + " > 0 "+ 
-                " or "+ CLIENT_CLOSE_CASE + " > 0 " + ");";
+                " or "+ CLIENT_CLOSE_CASE + " > 0 " + ") AND " + CLIENT_LAST_CREATED + " = 0;";
 
         Cursor c = db.rawQuery(sql,new String[] { userName });
         c.moveToFirst();
@@ -1507,7 +1552,7 @@ public class DbHelper extends SQLiteOpenHelper {
             values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
             values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
             values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
-            
+      
             if (client.getClientId() == -1) {
                 long localId = isClientSyncedWithServer(client.getClientServerId(), client.getHealthWorker());
                 if (localId == -1) {
@@ -1538,6 +1583,20 @@ public class DbHelper extends SQLiteOpenHelper {
                 }
             }
         }
+    }
+    
+    public void updateClientCreatedStatus(){
+    	
+    	//Client clinet = getLastCreatedClient();
+        ContentValues values;
+        values = new ContentValues();
+        values.put(CLIENT_LAST_CREATED, 0);
+        values.put(CLIENT_C_MODIFIED_DATE, System.currentTimeMillis()/1000);
+        db.update(CLIENT_TABLE, values, CLIENT_LAST_CREATED + " = 1", null);
+        
+        int count= getLastCreatedClientCount();
+        //Log.d()
+        System.out.println(count);
     }
     
     public void updateClientSession(Client client){
@@ -1571,7 +1630,7 @@ public class DbHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void addOrUpdateClient(Client client){
+    public void addOrUpdateClient(Client client, int isNewClient){
         ContentValues values;
         values = new ContentValues();
         values.put(CLIENT_C_NAME, client.getClientName());
@@ -1594,7 +1653,8 @@ public class DbHelper extends SQLiteOpenHelper {
         
         values.put(CLIENT_ADAPTED_METHOD_NAME, ((client.getAdaptedMethodName()).split("_")[0] != null )?((client.getAdaptedMethodName()).split("_")[0]):"");
         values.put(CLIENT_ADAPTED_METHOD_TIME, System.currentTimeMillis()/1000);
-
+        values.put(CLIENT_LAST_CREATED, client.getClientDeleteRecord());
+        values.put(CLIENT_LAST_CREATED, isNewClient);
         db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);
     }
 

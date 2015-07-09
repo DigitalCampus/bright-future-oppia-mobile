@@ -253,10 +253,12 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     public void onStart() {
         super.onStart();
         Boolean isFromClientReg=false;
+        Boolean isNewClient=false;
         try {
 	        Intent intent = getIntent();
 	        Bundle bundle=intent.getExtras();
 	        isFromClientReg = bundle.getBoolean("isFromClientReg");
+	        isNewClient = bundle.getBoolean("isNewClient");
         }
         catch(Exception e){
         	
@@ -266,7 +268,11 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         client = db.getClient(clientId);
         if(isFromClientReg!=null && isFromClientReg) {
         	long clientServerId=prefs.getLong("prefClientServerID", 0L);
-        	client = db.getServerClient(clientServerId);
+        	if( clientServerId > 0 )
+        		client = db.getServerClient(clientServerId);
+        }
+        if(isNewClient !=null && isNewClient) {
+        	client=db.getLastCreatedClient();
         }
         clientNameTextView.setText(client.getClientName());
         clientMobileTextView.setText(Long.toString(client.getClientMobileNumber()));
