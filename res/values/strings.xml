@@ -285,7 +285,8 @@
     <string name="error_register_no_lifestage">Please take client\'s life stage info</string>
     <string name="error_register_no_method">Please take client\'s method info</string>
     <string name="error_register_no_husband_name">Please take client\'s husband\'s name</string>
-    <string name="error_register_no_child_age">Please take client\'s youngest child\'s age</string>
+    <string name="error_register_no_child_age">Please take valid client\'s youngest child\'s age</string>
+    <string name="error_register_mismatch_parity">Please cross verify client\'s lifestage and parity entered</string>
     <string name="edit_information">Edit Information</string>
     <string name="make_call">Start call</string>
 
@@ -294,7 +295,7 @@
     <string name="client_registration_label">Client Registration</string>
     
     <string name="menu_share">Share</string>
-    <string name="clientreg_method_adapted_title">Adapted Method</string>
+    <string name="clientreg_method_adapted_title">Adopted Method</string>
     <string name="close_client_case">Close Case</string>
     <string name="delete_client_record">Delete Client</string>
 

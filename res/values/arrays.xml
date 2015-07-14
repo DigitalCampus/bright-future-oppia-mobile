@@ -72,5 +72,6 @@
         <item name="7">ECP</item>
         <item name="8">Post Abortion</item>
         <item name="9">Postpartum Family Planning</item>
+        <item name="10">Traditional Method</item>
     </string-array>
 </resources>
