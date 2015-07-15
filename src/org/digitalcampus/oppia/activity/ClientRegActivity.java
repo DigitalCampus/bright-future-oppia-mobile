@@ -61,7 +61,7 @@ public class ClientRegActivity extends AppActivity {
     DbHelper db;
     String adaptedMethodName;
     private LinearLayout methodNameLayout, adaptedMethodLayout;
-	private String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH))+
+	private String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH)+1)+
 			String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
 			String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
 	//private Client client;
