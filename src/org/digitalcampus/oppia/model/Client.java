@@ -2,6 +2,9 @@ package org.digitalcampus.oppia.model;
 
 import java.io.Serializable;
 
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
 public class Client implements Serializable, SearchOutput{
 
     /**

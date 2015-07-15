@@ -369,7 +369,7 @@ public class ClientRegActivity extends AppActivity {
                     tb.putSerializable(Course.TAG, c);
                     tb.putInt(MobileLearning.UJJWAL_COMPONENT_TAG, MobileLearning.CLIENT_COUNSELLING_COMPONENT);
                     if (isEditClient != null && isEditClient) {
-                    	tb.putBoolean("isFromClientReg", true);
+                    	tb.putBoolean("isNewClient", false);
                     }
                     else {
                     	tb.putBoolean("isNewClient", true);

@@ -83,6 +83,9 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
             Client client = (Client) listView.getItemAtPosition(position);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putLong("prefClientLocalID",client.getClientId() );
+            if(client.getClientServerId() > 0) {
+            	editor.putLong("prefClientServerID", client.getClientServerId() );
+            }
             editor.commit();
             startActivity(new Intent(ClientListActivity.this, ClientInfoActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
 //            ClientListActivity.this.finish();

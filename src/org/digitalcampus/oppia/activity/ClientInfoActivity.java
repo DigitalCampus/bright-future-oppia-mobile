@@ -252,12 +252,10 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     @Override
     public void onStart() {
         super.onStart();
-        Boolean isFromClientReg=false;
         Boolean isNewClient=false;
         try {
 	        Intent intent = getIntent();
 	        Bundle bundle=intent.getExtras();
-	        isFromClientReg = bundle.getBoolean("isFromClientReg");
 	        isNewClient = bundle.getBoolean("isNewClient");
         }
         catch(Exception e){
@@ -266,11 +264,9 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         db = new DbHelper(this);
         long clientId = prefs.getLong("prefClientLocalID", 0L);
         client = db.getClient(clientId);
-        if(isFromClientReg!=null && isFromClientReg) {
-        	long clientServerId=prefs.getLong("prefClientServerID", 0L);
-        	if( clientServerId > 0 )
-        		client = db.getServerClient(clientServerId);
-        }
+    	long clientServerId=prefs.getLong("prefClientServerID", 0L);
+    	if( clientServerId > 0 )
+    		client = db.getServerClient(clientServerId);
         if(isNewClient !=null && isNewClient) {
         	client=db.getLastCreatedClient();
         }
