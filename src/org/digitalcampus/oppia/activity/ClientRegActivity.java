@@ -61,6 +61,7 @@ public class ClientRegActivity extends AppActivity {
     DbHelper db;
     String adaptedMethodName;
     private LinearLayout methodNameLayout, adaptedMethodLayout;
+	private int marriedselectedPosition=0, lifeStageSelectedPosition;
 	private String toAppendClientName = String.valueOf(now.get(Calendar.YEAR))+String.valueOf(now.get(Calendar.MONTH)+1)+
 			String.valueOf(now.get(Calendar.DAY_OF_MONTH))+String.valueOf(now.get(Calendar.HOUR_OF_DAY))+
 			String.valueOf(now.get(Calendar.MINUTE))+String.valueOf(now.get(Calendar.SECOND));
@@ -182,7 +183,7 @@ public class ClientRegActivity extends AppActivity {
             // position 2 is no
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-
+            	marriedselectedPosition=position;
                 if (position == 1) {
                     maritalStatusSpecified = true;
                     if (genderSpecified) {
@@ -226,6 +227,15 @@ public class ClientRegActivity extends AppActivity {
             }
         });
 
+        plsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+            	lifeStageSelectedPosition=position;
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+            }
+        });
         sexSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             // position 0 is null
             // position 1 is female
@@ -488,14 +498,23 @@ public class ClientRegActivity extends AppActivity {
             return false;
         }
         
-        if (( clientLifeStage.equalsIgnoreCase("One child") && Integer.parseInt(clientParity) != 1 )
-        	|| ( !clientLifeStage.equalsIgnoreCase("One child") && Integer.parseInt(clientParity) == 1 ) ) {
+        if(lifeStageSelectedPosition==1 && marriedselectedPosition==1) {
+        	UIUtils.showAlert(context, R.string.error, R.string.error_register_mismatch_life_stage);
+            return false;
+        }
+        if(lifeStageSelectedPosition==2 && marriedselectedPosition==2) {
+        	UIUtils.showAlert(context, R.string.error, R.string.error_register_mismatch_life_stage);
+            return false;
+        }
+        
+        if (( lifeStageSelectedPosition==4 && Integer.parseInt(clientParity) != 1 )
+        	|| ( lifeStageSelectedPosition!=4 && Integer.parseInt(clientParity) == 1 ) ) {
         	UIUtils.showAlert(context, R.string.error, R.string.error_register_mismatch_parity);
             return false;
         }
         
-        if ( ( clientLifeStage.equalsIgnoreCase("Two or more children") && Integer.parseInt(clientParity) < 2 ) 
-        	||(!clientLifeStage.equalsIgnoreCase("Two or more children") && Integer.parseInt(clientParity) >= 2 ) ) {
+        if ( ( lifeStageSelectedPosition==6 && Integer.parseInt(clientParity) < 2 ) 
+        	||(lifeStageSelectedPosition!=6 && Integer.parseInt(clientParity) >= 2 ) ) {
         	UIUtils.showAlert(context, R.string.error, R.string.error_register_mismatch_parity);
             return false;
         }
@@ -511,7 +530,7 @@ public class ClientRegActivity extends AppActivity {
                 UIUtils.showAlert(context, R.string.error, R.string.error_register_no_child_age);
                 return false;
             }
-            if( (Integer.parseInt(clientAge) - Integer.parseInt(clientChildAgeYear)) < 15 ) {
+            if( Integer.parseInt(clientAge) - ( (clientChildAgeYear.equalsIgnoreCase("") ) ? 0:Integer.parseInt(clientChildAgeYear) ) < 15 ) {
             	 UIUtils.showAlert(context, R.string.error, R.string.error_register_no_child_age);
                  return false;
             }

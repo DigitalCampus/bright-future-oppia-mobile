@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.bright.future.oppia.mobile.learning"
-    android:versionCode="66"
-    android:versionName="1.2.8">
+    android:versionCode="67"
+    android:versionName="1.2.9">
  
 
     <uses-sdk
