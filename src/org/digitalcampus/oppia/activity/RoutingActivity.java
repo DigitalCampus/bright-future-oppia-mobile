@@ -16,21 +16,6 @@
  */
 package org.digitalcampus.oppia.activity;
 
-import java.util.ArrayList;
-import java.util.Locale;
-
-import org.bright.future.oppia.mobile.learning.R;
-import org.digitalcampus.oppia.application.DatabaseManager;
-import org.digitalcampus.oppia.application.DbHelper;
-import org.digitalcampus.oppia.application.MobileLearning;
-import org.digitalcampus.oppia.listener.ScanMediaListener;
-import org.digitalcampus.oppia.model.Course;
-import org.digitalcampus.oppia.model.Lang;
-import org.digitalcampus.oppia.service.TrackerService;
-import org.digitalcampus.oppia.task.Payload;
-import org.digitalcampus.oppia.task.ScanMediaTask;
-import org.digitalcampus.oppia.utils.UIUtils;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -46,8 +31,23 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
+import android.view.Menu;
+import android.view.MenuItem;
+
+import org.digitalcampus.oppia.application.DatabaseManager;
+import org.digitalcampus.oppia.application.DbHelper;
+import org.digitalcampus.oppia.application.MobileLearning;
+import org.digitalcampus.oppia.listener.ScanMediaListener;
+import org.digitalcampus.oppia.model.Course;
+import org.digitalcampus.oppia.model.Lang;
+import org.digitalcampus.oppia.service.TrackerService;
+import org.digitalcampus.oppia.task.Payload;
+import org.digitalcampus.oppia.task.ScanMediaTask;
+import org.digitalcampus.oppia.utils.UIUtils;
+import org.bright.future.oppia.mobile.learning.R;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 
 public class RoutingActivity extends AppActivity implements ScanMediaListener {
@@ -103,20 +103,20 @@ public class RoutingActivity extends AppActivity implements ScanMediaListener {
 		db = new DbHelper(this);
 		courses = db.getAllCourses();
         //update all old client status to 0.
-    	db.updateClientCreatedStatus();
+    	//db.updateClientCreatedStatus();
 		this.scanMedia();
          DatabaseManager.getInstance().closeDatabase();
     }
 	
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		UIUtils.showUserData(menu,this);
+		UIUtils.showUserData(menu,this, null);
 	    return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_main, menu);
+		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
 	
@@ -158,7 +158,7 @@ public class RoutingActivity extends AppActivity implements ScanMediaListener {
 			public void onClick(DialogInterface dialog, int which) {
 				// wipe user prefs
 				Editor editor = prefs.edit();
-				editor.putString("prefUsername", "");
+				editor.putString(PrefsActivity.PREF_USER_NAME, "");
 				editor.putString("prefApiKey", "");
 				editor.putInt("prefBadges", 0);
 				editor.putInt("prefPoints", 0);
@@ -249,7 +249,7 @@ public class RoutingActivity extends AppActivity implements ScanMediaListener {
 //            if counselling is on(1) and we come back to the routing screen , save session
             SharedPreferences.Editor editor = prefs.edit();
             editor.putInt("prefClientSessionActive", 0);
-//            db = new DbHelper(ctx);
+            db = new DbHelper(ctx);
             db.addEndClientSession(prefs.getLong("prefClientSessionId",0L), System.currentTimeMillis()/1000);
             editor.putLong("prefClientSessionId", 0L);
             editor.commit();

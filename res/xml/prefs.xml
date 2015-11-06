@@ -8,6 +8,15 @@
     </ListPreference>
 
     <ListPreference
+        android:defaultValue=""
+        android:key="prefStorageOption"
+        android:title="@string/prefStorageLocation"
+        android:entries="@array/StorageOptions"
+        android:entryValues="@array/StorageOptionValues">
+    </ListPreference>
+
+
+    <ListPreference
         android:defaultValue="16"
       	android:entries="@array/TextSize"
         android:entryValues="@array/TextSizeValues"
@@ -30,7 +39,7 @@
         android:title="@string/prefNoScheduleReminders_summary" />
 
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:key="prefHighlightCompleted"
         android:title="@string/prefHighlightCompleted" />
     
@@ -40,7 +49,7 @@
         android:title="@string/prefShowSectionNumbers" />
     
     <CheckBoxPreference
-        android:defaultValue="false"
+        android:defaultValue="true"
         android:key="prefShowProgressBar"
         android:title="@string/prefShowProgressBar" />
     
@@ -48,6 +57,18 @@
         android:defaultValue="true"
         android:key="prefShowCourseDescription"
         android:title="@string/prefShowCourseDescription" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="prefAdminProtection"
+        android:title="@string/prefAdminProtection" />
+
+    <EditTextPreference
+        android:defaultValue=""
+        android:key="prefAdminPassword"
+        android:title="@string/prefAdminPassword"
+        android:inputType="textPassword"
+        android:dependency="prefAdminProtection" />
     
     <PreferenceCategory android:title="@string/prefAdvanced" >
         <EditTextPreference
@@ -80,6 +101,22 @@
             android:key="prefBackgroundDataConnect"
             android:summary="@string/prefBackgroudDataConnect_summary"
             android:title="@string/prefBackgroudDataConnect" />
+        
+        <CheckBoxPreference
+        	android:defaultValue="true"
+	        android:key="prefLogoutEnabled"
+	        android:title="@string/prefLogoutEnabled" />
+        
+        <CheckBoxPreference
+        	android:defaultValue="true"
+	        android:key="prefDeleteCourseEnabled"
+	        android:title="@string/prefDeleteCourseEnabled" />
+        
+        <CheckBoxPreference
+        	android:defaultValue="false"
+	        android:key="prefDownloadViaCellularEnabled"
+	        android:title="@string/prefDownloadViaCellularEnabled"
+	        android:summary="@string/warning_download_via_cellular_enabled" />
     </PreferenceCategory>
 
 </PreferenceScreen>

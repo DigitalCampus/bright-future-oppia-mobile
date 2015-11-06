@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,7 @@ public class ResetFragment extends Fragment implements SubmitListener{
 
 	public void onResetClick(View view) {
 		// get form fields
-		String username = (String) usernameField.getText().toString();
+		String username = usernameField.getText().toString();
 
 		
 		// do validation

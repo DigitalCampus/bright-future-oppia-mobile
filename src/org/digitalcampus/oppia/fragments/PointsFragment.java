@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@ import org.digitalcampus.oppia.utils.UIUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.splunk.mint.Mint;
+
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -39,21 +41,19 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.bugsense.trace.BugSenseHandler;
-
 public class PointsFragment extends Fragment implements APIRequestListener {
 
 	public static final String TAG = PointsFragment.class.getSimpleName();
-	private JSONObject json;
-	
+
+    private JSONObject json;
+    private ArrayList<Points> points;
+	private PointsListAdapter pointsAdapter;
+
 	public static PointsFragment newInstance() {
-		PointsFragment myFragment = new PointsFragment();
-	    return myFragment;
+        return new PointsFragment();
 	}
 
-	public PointsFragment(){
-		
-	}
+	public PointsFragment(){ }
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -71,6 +71,11 @@ public class PointsFragment extends Fragment implements APIRequestListener {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
+        points = new ArrayList<Points>();
+        pointsAdapter = new PointsListAdapter(super.getActivity(), points);
+        ListView listView = (ListView) getView().findViewById(R.id.points_list);
+        listView.setAdapter(pointsAdapter);
 		getPoints();
 	}
 	
@@ -96,10 +101,7 @@ public class PointsFragment extends Fragment implements APIRequestListener {
 			}
 			TextView tv = (TextView) super.getActivity().findViewById(R.id.fragment_points_title);
 			tv.setVisibility(View.GONE);
-			
-			PointsListAdapter pla = new PointsListAdapter(super.getActivity(), points);
-			ListView listView = (ListView) super.getActivity().findViewById(R.id.points_list);
-			listView.setAdapter(pla);
+			pointsAdapter.notifyDataSetChanged();
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -108,21 +110,25 @@ public class PointsFragment extends Fragment implements APIRequestListener {
 	}
 	
 	public void apiRequestComplete(Payload response) {
+
+        //If the fragment has been detached, we don't process the result, as is not going to be shown
+        // and could cause NullPointerExceptions
+        if (super.getActivity() == null) return;
+
 		if(response.isResult()){
 			try {
 				json = new JSONObject(response.getResultResponse());
 				refreshPointsList();
 			} catch (JSONException e) {
-				BugSenseHandler.sendException(e);
+				Mint.logException(e);
 				UIUtils.showAlert(super.getActivity(), R.string.loading, R.string.error_connection);
 				e.printStackTrace();
 			}
 		} else {
-			TextView tv = (TextView) super.getActivity().findViewById(R.id.fragment_points_title);
-			tv.setVisibility(View.VISIBLE);
-			tv.setText(R.string.error_connection_required);
+            TextView tv = (TextView) getView().findViewById(R.id.fragment_points_title);
+            tv.setVisibility(View.VISIBLE);
+            tv.setText(R.string.error_connection_required);
 		}
 	}
-
 
 }

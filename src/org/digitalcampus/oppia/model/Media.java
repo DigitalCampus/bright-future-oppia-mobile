@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@ package org.digitalcampus.oppia.model;
 import java.io.Serializable;
 
 public class Media implements Serializable{
-	
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -7381597814535579028L;
 	
 	public static final String TAG = Media.class.getSimpleName();
@@ -32,6 +29,8 @@ public class Media implements Serializable{
 	private String digest;
 	private int length;
 	private double fileSize;
+
+	private int downloaded;
 	
 	public String getFilename() {
 		return filename;
@@ -72,4 +71,24 @@ public class Media implements Serializable{
 	public void setFileSize(double fileSize) {
 		this.fileSize = fileSize;
 	}
+
+	public int getDownloaded() {
+		return downloaded;
+	}
+
+
+    //ONLY FOR UI PURPOSES
+    private boolean downloading;
+    private int progress;
+
+    public boolean isDownloading() {
+        return downloading;
+    }
+    public void setDownloading(boolean downloading) {
+        this.downloading = downloading;
+    }
+
+    public int getProgress() { return progress; }
+    public void setProgress(int progress) { this.progress = progress; }
 }
+

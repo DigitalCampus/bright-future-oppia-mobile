@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string-array name="NoScheduleReminders">
         <item name="1">1</item>
         <item name="2">2</item>
@@ -73,5 +72,13 @@
         <item name="8">Post Abortion</item>
         <item name="9">Postpartum Family Planning</item>
         <item name="10">Traditional Method</item>
+    </string-array>
+    <string-array name="StorageOptions">
+        <item name="internal">@string/prefStorageOptionInternal</item>
+        <item name="external">@string/prefStorageOptionExternal</item>
+    </string-array>
+    <string-array name="StorageOptionValues">
+        <item name="internal">internal</item>
+        <item name="external">external</item>
     </string-array>
 </resources>

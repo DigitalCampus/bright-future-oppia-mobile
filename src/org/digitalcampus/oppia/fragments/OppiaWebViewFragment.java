@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 package org.digitalcampus.oppia.fragments;
 
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -74,7 +75,7 @@ public class OppiaWebViewFragment extends Fragment{
 		
 		webView = (WebView) super.getActivity().findViewById(this.id);
 		webView.getSettings().setJavaScriptEnabled(true);
-		int defaultFontSize = Integer.parseInt(prefs.getString("prefTextSize", "16"));
+		int defaultFontSize = Integer.parseInt(prefs.getString(PrefsActivity.PREF_TEXT_SIZE, "16"));
 		webView.getSettings().setDefaultFontSize(defaultFontSize);
 		url = (String) getArguments().getString(OppiaWebViewFragment.TAG);
 		webView.loadUrl(url);

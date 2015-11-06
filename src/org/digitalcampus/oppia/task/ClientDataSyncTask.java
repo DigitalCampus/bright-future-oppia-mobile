@@ -1,11 +1,10 @@
 package org.digitalcampus.oppia.task;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -13,21 +12,25 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
-import org.bright.future.oppia.mobile.learning.R;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
+import org.digitalcampus.oppia.exception.UserNotFoundException;
 import org.digitalcampus.oppia.listener.ClientDataSyncListener;
 import org.digitalcampus.oppia.model.Client;
 import org.digitalcampus.oppia.model.ClientDTO;
+import org.digitalcampus.oppia.model.User;
 import org.digitalcampus.oppia.utils.HTTPConnectionUtils;
+import org.bright.future.oppia.mobile.learning.R;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.preference.PreferenceManager;
-import android.util.Log;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 
 public class ClientDataSyncTask extends AsyncTask<Payload, Object, Payload> {
     public static final String TAG = ClientDataSyncTask.class.getSimpleName();
@@ -48,14 +51,16 @@ public class ClientDataSyncTask extends AsyncTask<Payload, Object, Payload> {
         DbHelper db = new DbHelper(ctx);
         long lastRun = prefs.getLong("lastClientSync", 0L);
 		int clientSentCount = prefs.getInt("prefClientSentCount", 0);
-
-        ArrayList<Client> clients = new ArrayList<Client>(db.getClientsForUpdates(prefs.getString("prefUsername",""), lastRun));
+		//update all old client status to 0.
+    	db.updateClientCreatedStatus();
+        ArrayList<Client> clients = new ArrayList<Client>(db.getClientsForUpdates(prefs.getString(PrefsActivity.PREF_USER_NAME, ""), lastRun));
         Payload payload = new Payload();
         String url = client.getFullURL(MobileLearning.SYNC_CLIENTS_DATA);
         HttpPost httpPost = new HttpPost(url);
         ObjectMapper mapper = new ObjectMapper();
 
         try {
+        	User u = db.getUser(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
             clientDTO.getClients().addAll(clients);
             clientDTO.setPreviousSyncTime(lastRun);
             publishProgress(ctx.getString(R.string.client_data_sync));
@@ -63,7 +68,7 @@ public class ClientDataSyncTask extends AsyncTask<Payload, Object, Payload> {
             StringEntity se = new StringEntity( str,"utf8");
             Log.d("JSONRequestToServer", str);
             se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-            httpPost.addHeader(client.getAuthHeader()); // authorization
+            httpPost.addHeader(client.getAuthHeader(u.getUsername(), u.getApiKey())); // authorization
             httpPost.setEntity(se);
             HttpResponse response = client.execute(httpPost);
             // read response
@@ -116,7 +121,11 @@ public class ClientDataSyncTask extends AsyncTask<Payload, Object, Payload> {
         } catch (IOException e) {
             payload.setResult(false);
             payload.setResultResponse(ctx.getString(R.string.error_connection));
-        } finally {
+        } catch (UserNotFoundException unfe) {
+        	unfe.printStackTrace();
+			payload.setResult(false);
+			payload.setResultResponse(ctx.getString(R.string.error_connection));
+		} finally {
         }
         return payload;
     }

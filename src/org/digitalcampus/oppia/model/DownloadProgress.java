@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,12 @@
 
 package org.digitalcampus.oppia.model;
 
-public class DownloadProgress {
+import java.io.Serializable;
 
+public class DownloadProgress implements Serializable {
+
+	public final static String TAG = DownloadProgress.class.getSimpleName();
+	private static final long serialVersionUID = -1408102165581810183L;
 	private String message = "";
 	private int progress = 0;
 	

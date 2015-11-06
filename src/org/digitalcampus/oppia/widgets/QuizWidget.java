@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,14 +34,19 @@ import org.digitalcampus.mobile.quiz.model.questiontypes.MultiSelect;
 import org.digitalcampus.mobile.quiz.model.questiontypes.Numerical;
 import org.digitalcampus.mobile.quiz.model.questiontypes.ShortAnswer;
 import org.digitalcampus.oppia.activity.CourseActivity;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.adapter.QuizFeedbackAdapter;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.Tracker;
 import org.digitalcampus.oppia.model.Activity;
 import org.digitalcampus.oppia.model.Course;
+import org.digitalcampus.oppia.model.QuizAttempt;
 import org.digitalcampus.oppia.model.QuizFeedback;
+import org.digitalcampus.oppia.utils.resources.ExternalResourceOpener;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
 import org.digitalcampus.oppia.utils.MetaDataUtils;
+import org.digitalcampus.oppia.utils.mediaplayer.VideoPlayerActivity;
 import org.digitalcampus.oppia.widgets.quiz.DescriptionWidget;
 import org.digitalcampus.oppia.widgets.quiz.MatchingWidget;
 import org.digitalcampus.oppia.widgets.quiz.MultiChoiceWidget;
@@ -56,19 +61,18 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -116,7 +120,7 @@ public class QuizWidget extends WidgetFactory {
 		activity = ((Activity) getArguments().getSerializable(Activity.TAG));
 		this.setIsBaseline(getArguments().getBoolean(CourseActivity.BASELINE_TAG));
 		quizContent = ((Activity) getArguments().getSerializable(Activity.TAG)).getContents(prefs.getString(
-				"prefLanguage", Locale.getDefault().getLanguage()));
+				PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 
 		LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		vv.setLayoutParams(lp);
@@ -124,6 +128,7 @@ public class QuizWidget extends WidgetFactory {
 		if ((savedInstanceState != null) && (savedInstanceState.getSerializable("widget_config") != null)){
 			setWidgetConfig((HashMap<String, Object>) savedInstanceState.getSerializable("widget_config"));
 		}
+
 		return vv;
 	}
 
@@ -140,62 +145,68 @@ public class QuizWidget extends WidgetFactory {
 		nextBtn = (Button) getView().findViewById(R.id.mquiz_next_btn);
 		qText = (TextView) getView().findViewById(R.id.question_text);
 		questionImage = (LinearLayout) getView().findViewById(R.id.question_image);
+
+        loadQuiz();
 	}
 	
 	@Override
 	public void onResume(){
 		super.onResume();
-		if (this.quiz == null) {
-			this.quiz = new Quiz();
-			this.quiz.load(quizContent,prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
-		}
-		if (this.isOnResultsPage) {
-			this.showResults();
-		} else {
-			// determine availability
-			if (this.quiz.getAvailability() == Quiz.AVAILABILITY_ALWAYS){
-				this.showQuestion();
-			} else if (this.quiz.getAvailability() == Quiz.AVAILABILITY_SECTION){
-				
-				// check to see if all previous section activities have been completed
-				DbHelper db = new DbHelper(getView().getContext());
-				long userId = db.getUserId(prefs.getString("prefUsername", ""));
-				boolean completed = db.isPreviousSectionActivitiesCompleted(course, activity, userId);
-				DatabaseManager.getInstance().closeDatabase();
-				
-				if (completed){
-					this.showQuestion();
-				} else {
-					ViewGroup vg = (ViewGroup) getView().findViewById(activity.getActId());
-					vg.removeAllViews();
-					vg.addView(View.inflate(getView().getContext(), R.layout.widget_quiz_unavailable, null));
-					
-					TextView tv = (TextView) getView().findViewById(R.id.quiz_unavailable);
-					tv.setText(R.string.widget_quiz_unavailable_section);
-				}
-			} else if (this.quiz.getAvailability() == Quiz.AVAILABILITY_COURSE){
-				// check to see if all previous course activities have been completed
-				DbHelper db = new DbHelper(getView().getContext());
-				long userId = db.getUserId(prefs.getString("prefUsername", ""));
-				boolean completed = db.isPreviousCourseActivitiesCompleted(course, activity, userId);
-				DatabaseManager.getInstance().closeDatabase();
-				
-				if (completed){
-					this.showQuestion();
-				} else {
-					ViewGroup vg = (ViewGroup) getView().findViewById(activity.getActId());
-					vg.removeAllViews();
-					vg.addView(View.inflate(getView().getContext(), R.layout.widget_quiz_unavailable, null));
-					
-					TextView tv = (TextView) getView().findViewById(R.id.quiz_unavailable);
-					tv.setText(R.string.widget_quiz_unavailable_course);
-				}
-			}
-		}
+		loadQuiz();
 	}
 
+    public void loadQuiz(){
+        if (this.quiz == null) {
+            this.quiz = new Quiz();
+            this.quiz.load(quizContent,prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
+        }
+        if (this.isOnResultsPage) {
+            this.showResults();
+        } else {
+            // determine availability
+            if (this.quiz.getAvailability() == Quiz.AVAILABILITY_ALWAYS){
+                this.showQuestion();
+            } else if (this.quiz.getAvailability() == Quiz.AVAILABILITY_SECTION){
+
+                // check to see if all previous section activities have been completed
+                DbHelper db = new DbHelper(getView().getContext());
+                long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+                boolean completed = db.isPreviousSectionActivitiesCompleted(course, activity, userId);
+                DatabaseManager.getInstance().closeDatabase();
+
+                if (completed){
+                    this.showQuestion();
+                } else {
+                    ViewGroup vg = (ViewGroup) getView().findViewById(activity.getActId());
+                    vg.removeAllViews();
+                    vg.addView(View.inflate(getView().getContext(), R.layout.widget_quiz_unavailable, null));
+
+                    TextView tv = (TextView) getView().findViewById(R.id.quiz_unavailable);
+                    tv.setText(R.string.widget_quiz_unavailable_section);
+                }
+            } else if (this.quiz.getAvailability() == Quiz.AVAILABILITY_COURSE){
+                // check to see if all previous course activities have been completed
+                DbHelper db = new DbHelper(getView().getContext());
+                long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+                boolean completed = db.isPreviousCourseActivitiesCompleted(course, activity, userId);
+                DatabaseManager.getInstance().closeDatabase();
+
+                if (completed){
+                    this.showQuestion();
+                } else {
+                    ViewGroup vg = (ViewGroup) getView().findViewById(activity.getActId());
+                    vg.removeAllViews();
+                    vg.addView(View.inflate(getView().getContext(), R.layout.widget_quiz_unavailable, null));
+
+                    TextView tv = (TextView) getView().findViewById(R.id.quiz_unavailable);
+                    tv.setText(R.string.widget_quiz_unavailable_course);
+                }
+            }
+        }
+    }
+
 	public void showQuestion() {
-		QuizQuestion q = null;
+		QuizQuestion q;
 		try {
 			q = this.quiz.getCurrentQuestion();
 		} catch (InvalidQuizException e) {
@@ -205,7 +216,7 @@ public class QuizWidget extends WidgetFactory {
 		}
 		qText.setVisibility(View.VISIBLE);
 		// convert in case has any html special chars
-		qText.setText(Html.fromHtml(q.getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()))).toString());
+		qText.setText(Html.fromHtml(q.getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()))).toString());
 
 		if (q.getProp("image") == null) {
 			questionImage.setVisibility(View.GONE);
@@ -217,9 +228,20 @@ public class QuizWidget extends WidgetFactory {
 			ImageView iv = (ImageView) getView().findViewById(R.id.question_image_image);
 			iv.setImageBitmap(myBitmap);
 			iv.setTag(file);
-			OnImageClickListener oicl = new OnImageClickListener(super.getActivity(), "image/*");
-			iv.setOnClickListener(oicl);
-			questionImage.setVisibility(View.VISIBLE);
+			if (q.getProp("media") == null){
+				OnImageClickListener oicl = new OnImageClickListener(super.getActivity(), "image/*");
+				iv.setOnClickListener(oicl);
+				TextView tv = (TextView) getView().findViewById(R.id.question_image_caption);
+				tv.setText(R.string.widget_quiz_image_caption);
+				questionImage.setVisibility(View.VISIBLE);
+			} else {
+				TextView tv = (TextView) getView().findViewById(R.id.question_image_caption);
+				tv.setText(R.string.widget_quiz_media_caption);
+				OnMediaClickListener omcl = new OnMediaClickListener(q.getProp("media"));
+				iv.setOnClickListener(omcl);
+				questionImage.setVisibility(View.VISIBLE);
+			}
+			
 		}
 
 		if (q instanceof MultiChoice) {
@@ -267,13 +289,16 @@ public class QuizWidget extends WidgetFactory {
 			public void onClick(View v) {
 				// save answer
 				if (saveAnswer()) {
-					String feedback = "";
+					String feedback;
 					try {
-						feedback = QuizWidget.this.quiz.getCurrentQuestion().getFeedback(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+						feedback = QuizWidget.this.quiz.getCurrentQuestion().getFeedback(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 					
 						if (!feedback.equals("") && 
 								quiz.getShowFeedback() == Quiz.SHOW_FEEDBACK_ALWAYS 
 								&& !QuizWidget.this.quiz.getCurrentQuestion().getFeedbackDisplayed()) {
+                            //We hide the keyboard before showing the dialog
+                            InputMethodManager imm =  (InputMethodManager) QuizWidget.super.getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 							showFeedback(feedback);
 						} else if (QuizWidget.this.quiz.hasNext()) {
 							QuizWidget.this.quiz.moveNext();
@@ -349,9 +374,9 @@ public class QuizWidget extends WidgetFactory {
 			public void onClick(DialogInterface arg0, int arg1) {
 				if (QuizWidget.this.quiz.hasNext()) {
 					QuizWidget.this.quiz.moveNext();
-					showQuestion();
+					QuizWidget.this.showQuestion();
 				} else {
-					showResults();
+					QuizWidget.this.showResults();
 				}
 			}
 		});
@@ -367,23 +392,38 @@ public class QuizWidget extends WidgetFactory {
 
 		// log the activity as complete
 		isOnResultsPage = true;
-		this.saveTracker();
-
+		quiz.mark(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		// save results ready to send back to the quiz server
 		String data = quiz.getResultObject().toString();
+		Log.d(TAG,data);
+		
 		DbHelper db = new DbHelper(super.getActivity());
-		db.insertQuizResult(data, course.getCourseId());
+		long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+		
+		QuizAttempt qa = new QuizAttempt();
+		qa.setCourseId(course.getCourseId());
+		qa.setUserId(userId);
+		qa.setData(data);
+		qa.setActivityDigest(activity.getDigest());
+		qa.setScore(quiz.getUserscore());
+		qa.setMaxscore(quiz.getMaxscore());
+		qa.setPassed(this.getActivityCompleted());
+		qa.setSent(false);
+		db.insertQuizAttempt(qa);
 		DatabaseManager.getInstance().closeDatabase();
 		
-		
-		// load new layout
-		View C = getView().findViewById(R.id.quiz_progress);
-	    ViewGroup parent = (ViewGroup) C.getParent();
-	    int index = parent.indexOfChild(C);
-	    parent.removeView(C);
-	    C = super.getActivity().getLayoutInflater().inflate(R.layout.widget_quiz_results, parent, false);
-	    parent.addView(C, index);
-		
+		//Check if quiz results layout is already loaded
+        View quizResultsLayout = getView().findViewById(R.id.widget_quiz_results);
+        if (quizResultsLayout == null){
+            // load new layout
+            View C = getView().findViewById(R.id.quiz_progress);
+            ViewGroup parent = (ViewGroup) C.getParent();
+            int index = parent.indexOfChild(C);
+            parent.removeView(C);
+            C = super.getActivity().getLayoutInflater().inflate(R.layout.widget_quiz_results, parent, false);
+            parent.addView(C, index);
+        }
+
 		TextView title = (TextView) getView().findViewById(R.id.quiz_results_score);
 		title.setText(super.getActivity().getString(R.string.widget_quiz_results_score, this.getPercent()));
 
@@ -404,9 +444,9 @@ public class QuizWidget extends WidgetFactory {
 				if(!(q instanceof Description)){
 					QuizFeedback qf = new QuizFeedback();
 					qf.setScore(q.getScoreAsPercent());
-					qf.setQuestionText(q.getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())));
+					qf.setQuestionText(q.getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())));
 					qf.setUserResponse(q.getUserResponses());
-					qf.setFeedbackText(q.getFeedback(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())));
+					qf.setFeedbackText(q.getFeedback(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())));
 					quizFeedback.add(qf);
 				}
 			}
@@ -438,7 +478,7 @@ public class QuizWidget extends WidgetFactory {
 		this.setStartTime(System.currentTimeMillis() / 1000);
 		
 		this.quiz = new Quiz();
-		this.quiz.load(quizContent,prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+		this.quiz.load(quizContent,prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		this.isOnResultsPage = false;
 		
 		// reload quiz layout
@@ -460,21 +500,19 @@ public class QuizWidget extends WidgetFactory {
 	@Override
 	protected boolean getActivityCompleted() {
 		int passThreshold;
+		Log.d(TAG, "Threshold:" + quiz.getPassThreshold() );
 		if (quiz.getPassThreshold() != 0){
 			passThreshold = quiz.getPassThreshold();
 		} else {
 			passThreshold = Quiz.QUIZ_DEFAULT_PASS_THRESHOLD;
 		}
-		if (isOnResultsPage && this.getPercent() >= passThreshold) {
-			return true;
-		} else {
-			return false;
-		}
+		Log.d(TAG, "Percent:" + this.getPercent() );
+        return (isOnResultsPage && this.getPercent() >= passThreshold);
 	}
 
 	@Override
 	public void saveTracker() {
-		long timetaken = System.currentTimeMillis() / 1000 - this.getStartTime();
+		long timetaken = this.getSpentTime();
 		Tracker t = new Tracker(super.getActivity());
 		JSONObject obj = new JSONObject();
 		if(!isOnResultsPage){
@@ -485,7 +523,7 @@ public class QuizWidget extends WidgetFactory {
 			MetaDataUtils mdu = new MetaDataUtils(super.getActivity());
 			obj.put("timetaken", timetaken);
 			obj = mdu.getMetaData(obj);
-			String lang = prefs.getString("prefLanguage", Locale.getDefault().getLanguage());
+			String lang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
 			obj.put("lang", lang);
 			obj.put("quiz_id", quiz.getID());
 			obj.put("instance_id", quiz.getInstanceID());
@@ -532,7 +570,7 @@ public class QuizWidget extends WidgetFactory {
 		// Get the current question text
 		String toRead = "";
 		try {
-			toRead = quiz.getCurrentQuestion().getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+			toRead = quiz.getCurrentQuestion().getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		} catch (InvalidQuizException e) {
 			e.printStackTrace();
 		}
@@ -540,7 +578,7 @@ public class QuizWidget extends WidgetFactory {
 	}
 
 	private float getPercent() {
-		quiz.mark(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+		quiz.mark(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		float percent = quiz.getUserscore() * 100 / quiz.getMaxscore();
 		return percent;
 	}
@@ -563,31 +601,47 @@ public class QuizWidget extends WidgetFactory {
 				return;
 			} 
 			Uri targetUri = Uri.fromFile(file);
-			
 			// check there is actually an app installed to open this filetype
-			
-			Intent intent = new Intent();
-			intent.setAction(android.content.Intent.ACTION_VIEW);
-			intent.setDataAndType(targetUri, type);
-			
-			PackageManager pm = this.ctx.getPackageManager();
-
-			List<ResolveInfo> infos = pm.queryIntentActivities(intent, PackageManager.GET_RESOLVED_FILTER);
-			boolean appFound = false;
-			for (ResolveInfo info : infos) {
-				IntentFilter filter = info.filter;
-				if (filter != null && filter.hasAction(Intent.ACTION_VIEW)) {
-					// Found an app with the right intent/filter
-					appFound = true;
-				}
-			}
-
-			if(appFound){
+			Intent intent = ExternalResourceOpener.getIntentToOpenResource(ctx, targetUri, type);
+			if(intent != null){
 				this.ctx.startActivity(intent);
 			} else {
 				Toast.makeText(this.ctx,this.ctx.getString(R.string.error_resource_app_not_found,file.getName()), Toast.LENGTH_LONG).show();
 			}
-			return;
+		}
+		
+	}
+	
+	private class OnMediaClickListener implements OnClickListener{
+
+		private String mediaFileName;
+		
+		public OnMediaClickListener(String mediaFileName){
+			this.mediaFileName = mediaFileName;
+		}
+
+		public void onClick(View v) {
+			// check video file exists
+			boolean exists = FileUtils.mediaFileExists(QuizWidget.super.getActivity(), mediaFileName);
+			if (!exists) {
+				Toast.makeText(QuizWidget.super.getActivity(), QuizWidget.super.getActivity().getString(R.string.error_media_not_found, mediaFileName), Toast.LENGTH_LONG).show();
+			    return;
+            }
+
+			String mimeType = FileUtils.getMimeType(FileUtils.getMediaPath(QuizWidget.super.getActivity()) + mediaFileName);
+			if (!FileUtils.supportedMediafileType(mimeType)) {
+				Toast.makeText(QuizWidget.super.getActivity(), QuizWidget.super.getActivity().getString(R.string.error_media_unsupported, mediaFileName),
+						Toast.LENGTH_LONG).show();
+                return;
+			}
+			
+			Intent intent = new Intent(QuizWidget.super.getActivity(), VideoPlayerActivity.class);
+			Bundle tb = new Bundle();
+			tb.putSerializable(VideoPlayerActivity.MEDIA_TAG, mediaFileName);
+			tb.putSerializable(Activity.TAG, activity);
+			tb.putSerializable(Course.TAG, course);
+			intent.putExtras(tb);
+			startActivity(intent);
 		}
 		
 	}

@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,12 @@
 
 package org.digitalcampus.oppia.activity;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.concurrent.Callable;
-
-import org.bright.future.oppia.mobile.learning.R;
-import org.digitalcampus.oppia.adapter.CourseListAdapter;
-import org.digitalcampus.oppia.adapter.SectionListAdapter;
-import org.digitalcampus.oppia.application.DatabaseManager;
-import org.digitalcampus.oppia.application.DbHelper;
-import org.digitalcampus.oppia.application.MobileLearning;
-import org.digitalcampus.oppia.exception.InvalidXMLException;
-import org.digitalcampus.oppia.listener.ScanMediaListener;
-import org.digitalcampus.oppia.model.Activity;
-import org.digitalcampus.oppia.model.Course;
-import org.digitalcampus.oppia.model.Lang;
-import org.digitalcampus.oppia.task.Payload;
-import org.digitalcampus.oppia.task.ScanMediaTask;
-import org.digitalcampus.oppia.utils.CourseXMLReader;
-import org.digitalcampus.oppia.utils.FileUtils;
-import org.digitalcampus.oppia.utils.UIUtils;
-
+import android.animation.ValueAnimator;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -50,25 +31,67 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.TranslateAnimation;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
+import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.adapter.CourseListAdapter;
+import org.digitalcampus.oppia.application.AdminSecurityManager;
+import org.digitalcampus.oppia.application.DatabaseManager;
+import org.digitalcampus.oppia.application.DbHelper;
+import org.digitalcampus.oppia.application.MobileLearning;
+import org.digitalcampus.oppia.fragments.PasswordDialogFragment;
+import org.digitalcampus.oppia.listener.CourseInstallerListener;
+import org.digitalcampus.oppia.listener.DeleteCourseListener;
+import org.digitalcampus.oppia.listener.ScanMediaListener;
+import org.digitalcampus.oppia.listener.UpdateActivityListener;
+import org.digitalcampus.oppia.model.Activity;
+import org.digitalcampus.oppia.model.Course;
+import org.digitalcampus.oppia.model.DownloadProgress;
+import org.digitalcampus.oppia.model.Lang;
+import org.digitalcampus.oppia.service.CourseIntallerService;
+import org.digitalcampus.oppia.service.InstallerBroadcastReceiver;
+import org.digitalcampus.oppia.task.DeleteCourseTask;
+import org.digitalcampus.oppia.task.Payload;
+import org.digitalcampus.oppia.task.ScanMediaTask;
+import org.digitalcampus.oppia.task.UpdateCourseActivityTask;
+import org.digitalcampus.oppia.utils.UIUtils;
+import org.digitalcampus.oppia.utils.ui.CourseContextMenuCustom;
 
-public class OppiaMobileActivity extends AppActivity implements OnSharedPreferenceChangeListener, ScanMediaListener {
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.concurrent.Callable;
+
+public class OppiaMobileActivity extends AppActivity implements OnSharedPreferenceChangeListener, ScanMediaListener, DeleteCourseListener, CourseInstallerListener, UpdateActivityListener, CourseContextMenuCustom.OnContextMenuListener {
 
 	public static final String TAG = OppiaMobileActivity.class.getSimpleName();
 	private SharedPreferences prefs;
 	private ArrayList<Course> courses;
 	private Course tempCourse;
 	private long userId = 0;
+    private int initialCourseListPadding = 0;
+
+    private TextView messageText;
+    private Button messageButton;
+    private View messageContainer;
+
+    LinearLayout llNone;
+
+    private CourseListAdapter courseListAdapter;
+    private ListView courseList;
+
+    private ProgressDialog progressDialog;
+    private InstallerBroadcastReceiver receiver;
 	private int ujjwalComponent = 0;
 
 	@Override
@@ -76,18 +99,45 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 		super.onCreate(savedInstanceState);
 		
 		setContentView(R.layout.activity_main);
-		
+
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		prefs.registerOnSharedPreferenceChangeListener(this);
-		PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
-		
+        PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
+        prefs.registerOnSharedPreferenceChangeListener(this);
+
 		// set preferred lang to the default lang
-		if (prefs.getString("prefLanguage", "").equals("")) {
+		if ("".equals(prefs.getString(PrefsActivity.PREF_LANGUAGE, ""))) {
 			Editor editor = prefs.edit();
-			editor.putString("prefLanguage", Locale.getDefault().getLanguage());
+			editor.putString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
 			editor.commit();
 		}
-		
+
+        messageContainer = this.findViewById(R.id.home_messages);
+        messageText = (TextView) this.findViewById(R.id.home_message);
+        messageButton = (Button) this.findViewById(R.id.message_action_button);
+
+        courses = new ArrayList<Course>();
+        courseListAdapter = new CourseListAdapter(this, courses);
+        courseList = (ListView) findViewById(R.id.course_list);
+        courseList.setAdapter(courseListAdapter);
+
+        CourseContextMenuCustom courseMenu = new CourseContextMenuCustom(this);
+        courseMenu.registerForContextMenu(courseList, this);
+        //registerForContextMenu(courseList);
+
+        courseList.setOnItemClickListener(new OnItemClickListener() {
+
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Course selectedCourse = courses.get(position);
+                Intent i = new Intent(OppiaMobileActivity.this, CourseIndexActivity.class);
+                Bundle tb = new Bundle();
+                tb.putSerializable(Course.TAG, selectedCourse);
+                i.putExtras(tb);
+                startActivity(i);
+            }
+        });
+
+        llNone = (LinearLayout) this.findViewById(R.id.no_courses);
+        initialCourseListPadding = courseList.getPaddingTop();
 		Bundle bundle = this.getIntent().getExtras();
 		if (bundle != null) {
 			ujjwalComponent = bundle.getInt(MobileLearning.UJJWAL_COMPONENT_TAG);
@@ -98,27 +148,36 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 	public void onStart() {
 		super.onStart();
 		DbHelper db = new DbHelper(this);
-		userId = db.getUserId(prefs.getString("prefUsername", ""));
-        courses = db.getAllCourses();
+		userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
 		DatabaseManager.getInstance().closeDatabase();
-		displayCourses(userId);		
+
+		displayCourses(userId);
 	}
 
 	@Override
 	public void onResume(){
 		super.onResume();
 		this.updateReminders();
+
+        receiver = new InstallerBroadcastReceiver();
+        receiver.setCourseInstallerListener(this);
+        IntentFilter broadcastFilter = new IntentFilter(CourseIntallerService.BROADCAST_ACTION);
+        broadcastFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
+        registerReceiver(receiver, broadcastFilter);
 	}
 	
 	@Override
 	public void onPause(){
-		super.onPause();
+        super.onPause();
+        unregisterReceiver(receiver);
 	}
 	
 	private void displayCourses(long userId) {
 
 		DbHelper db = new DbHelper(this);
-		if (ujjwalComponent == MobileLearning.CLIENT_COUNSELLING_COMPONENT){
+        courses.clear();
+		courses.addAll(db.getCourses(userId));
+		/*if (ujjwalComponent == MobileLearning.CLIENT_COUNSELLING_COMPONENT){
 			Log.d(TAG,"in counselling");
 			courses = db.getCounsellingCourses(userId);
 		} else if (ujjwalComponent == MobileLearning.MOBILE_LEARNING_COMPONENT){
@@ -127,76 +186,21 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 		} else {
             courses = new ArrayList<Course>();
 			Log.d(TAG,"in nothing");
-		}
+		}*/
 		DatabaseManager.getInstance().closeDatabase();
 		
 		LinearLayout llLoading = (LinearLayout) this.findViewById(R.id.loading_courses);
 		llLoading.setVisibility(View.GONE);
-		LinearLayout llNone = (LinearLayout) this.findViewById(R.id.no_courses);
 		
-		if (courses.size() == 0){
-			llNone.setVisibility(View.VISIBLE);
-			Button manageBtn = (Button) this.findViewById(R.id.manage_courses_btn);
-			manageBtn.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					startActivity(new Intent(OppiaMobileActivity.this, TagSelectActivity.class));
-				}
-			});
-		} else if (courses.size() < MobileLearning.DOWNLOAD_COURSES_DISPLAY) {
-			llNone.setVisibility(View.VISIBLE);
-			TextView tv = (TextView) this.findViewById(R.id.manage_courses_text);
-			tv.setText(R.string.more_courses);
-			Button manageBtn = (Button) this.findViewById(R.id.manage_courses_btn);
-			manageBtn.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					startActivity(new Intent(OppiaMobileActivity.this, TagSelectActivity.class));
-				}
-			});
+		if (courses.size() < MobileLearning.DOWNLOAD_COURSES_DISPLAY){
+			displayDownloadSection();
 		} else {
 			TextView tv = (TextView) this.findViewById(R.id.manage_courses_text);
 			tv.setText(R.string.no_courses);
 			llNone.setVisibility(View.GONE);
 		}
 
-		CourseListAdapter mla = new CourseListAdapter(this, courses);
-		ListView listView = (ListView) findViewById(R.id.course_list);
-		listView.setAdapter(mla);
-		registerForContextMenu(listView);
-
-		listView.setOnItemClickListener(new OnItemClickListener() {
-
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Course c = (Course) view.getTag();
-				Bundle tb;
-				Intent i;
-				try {
-					CourseXMLReader cxr;
-					cxr = new CourseXMLReader(c.getCourseXMLLocation(), OppiaMobileActivity.this);
-					ArrayList<Activity> activities = cxr.getBaselineActivities(c.getCourseId());
-					if(activities.size() >0){
-						i = new Intent(OppiaMobileActivity.this, CourseActivity.class);
-						tb = new Bundle();
-						tb.putSerializable(Course.TAG, c);
-						tb.putSerializable(Activity.TAG,activities);
-						tb.putBoolean(CourseActivity.BASELINE_TAG, true);
-					} else {
-						i = new Intent(OppiaMobileActivity.this, CourseIndexActivity.class);
-						tb = new Bundle();
-						tb.putSerializable(Course.TAG, c);
-						tb.putBoolean(CourseActivity.BASELINE_TAG, false);
-					}
-					tb.putSerializable(SectionListAdapter.TAG_PLACEHOLDER,0);
-					i.putExtras(tb);
-					startActivity(i);
-				} catch (InvalidXMLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-				
-			}
-		});
-
+        courseListAdapter.notifyDataSetChanged();
 		this.updateReminders();
 		
 		// scan media
@@ -204,10 +208,10 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 	}
 
 	private void updateReminders(){
-		if(prefs.getBoolean("prefShowScheduleReminders", false)){
+		if(prefs.getBoolean(PrefsActivity.PREF_SHOW_SCHEDULE_REMINDERS, false)){
 			DbHelper db = new DbHelper(OppiaMobileActivity.this);
-			int max = Integer.valueOf(prefs.getString("prefNoScheduleReminders", "2"));
-			long userId = db.getUserId(prefs.getString("prefUsername", ""));
+			int max = Integer.valueOf(prefs.getString(PrefsActivity.PREF_NO_SCHEDULE_REMINDERS, "2"));
+			long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
 			ArrayList<Activity> activities = db.getActivitiesDue(max, userId);
 			DatabaseManager.getInstance().closeDatabase();
 
@@ -217,82 +221,106 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 			ll.setVisibility(View.GONE);
 		}		
 	}
-	
-	private void scanMedia() {
-		long now = System.currentTimeMillis()/1000;
-		if (prefs.getLong("prefLastMediaScan", 0)+3600 > now) {
-			LinearLayout ll = (LinearLayout) this.findViewById(R.id.home_messages);
-			ll.setVisibility(View.GONE);
-			return;
-		}
-		ScanMediaTask task = new ScanMediaTask(this);
-		Payload p = new Payload(this.courses);
-		task.setScanMediaListener(this);
-		task.execute(p);
-	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_main, menu);
+		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		UIUtils.showUserData(menu,this);
+		UIUtils.showUserData(menu, this, null);
+		
+		MenuItem itemLogout = menu.findItem(R.id.menu_logout);
+		itemLogout.setVisible(prefs.getBoolean(PrefsActivity.PREF_LOGOUT_ENABLED, MobileLearning.MENU_ALLOW_LOGOUT));
+		
+		MenuItem itemSettings = menu.findItem(R.id.menu_settings);
+		itemSettings.setVisible(MobileLearning.MENU_ALLOW_SETTINGS);
+		
+		MenuItem itemMonitor = menu.findItem(R.id.menu_monitor);
+		itemMonitor.setVisible(MobileLearning.MENU_ALLOW_MONITOR);
+		
+		MenuItem itemCourseDownload = menu.findItem(R.id.menu_download);
+		itemCourseDownload.setVisible(MobileLearning.MENU_ALLOW_COURSE_DOWNLOAD);
+		
 	    return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
-		Log.d(TAG,"selected:" + item.getItemId());
-		switch (item.getItemId()) {
-			case R.id.menu_about:
-				startActivity(new Intent(this, AboutActivity.class));
-				return true;
-			case R.id.menu_download:
-				startActivity(new Intent(this, TagSelectActivity.class));
-				return true;
-			case R.id.menu_settings:
-				Intent i = new Intent(this, PrefsActivity.class);
-				Bundle tb = new Bundle();
-				ArrayList<Lang> langs = new ArrayList<Lang>();
-				for(Course m: courses){
-					langs.addAll(m.getLangs());
-				}
-				tb.putSerializable("langs", langs);
-				i.putExtras(tb);
-				startActivity(i);
-				return true;
-			case R.id.menu_language:
-				createLanguageDialog();
-				return true;
-			case R.id.menu_search:
-				startActivity(new Intent(this, SearchActivity.class));
-				return true;
-			case R.id.menu_logout:
-				logout();
-				return true;
-		}
-		return true;
+		Log.d(TAG, "Menu item selected: " + item.getTitle());
+
+        final int itemId = item.getItemId();
+        checkAdminPermission(itemId, new AdminSecurityManager.AuthListener() {
+            public void onPermissionGranted() {
+                if (itemId == R.id.menu_download) {
+                    startActivity(new Intent(OppiaMobileActivity.this, TagSelectActivity.class));
+                } else if (itemId == R.id.menu_about) {
+                    startActivity(new Intent(OppiaMobileActivity.this, AboutActivity.class));
+                } else if (itemId == R.id.menu_monitor) {
+                    startActivity(new Intent(OppiaMobileActivity.this, MonitorActivity.class));
+                } else if (itemId == R.id.menu_scorecard) {
+                    startActivity(new Intent(OppiaMobileActivity.this, ScorecardActivity.class));
+                } else if (itemId == R.id.menu_search) {
+                    startActivity(new Intent(OppiaMobileActivity.this, SearchActivity.class));
+                } else if (itemId == R.id.menu_settings) {
+                    startPrefsActivity();
+                } else if (itemId == R.id.menu_language) {
+                    createLanguageDialog();
+                } else if (itemId == R.id.menu_logout) {
+                    logout();
+                }
+            }
+        });
+
+        return true;
 	}
 
+    private void startPrefsActivity(){
+        Intent i = new Intent(OppiaMobileActivity.this, PrefsActivity.class);
+        Bundle tb = new Bundle();
+        ArrayList<Lang> langs = new ArrayList<Lang>();
+        for(Course m: courses){
+            langs.addAll(m.getLangs());
+        }
+        tb.putSerializable("langs", langs);
+        i.putExtras(tb);
+        startActivity(i);
+    }
+
+    private void displayDownloadSection(){
+        llNone.setVisibility(View.VISIBLE);
+
+        TextView tv = (TextView) this.findViewById(R.id.manage_courses_text);
+        tv.setText((courses.size() > 0)? R.string.more_courses : R.string.no_courses);
+
+        Button manageBtn = (Button) this.findViewById(R.id.manage_courses_btn);
+        manageBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+            checkAdminPermission(R.id.menu_download, new AdminSecurityManager.AuthListener() {
+                public void onPermissionGranted() {
+                    startActivity(new Intent(OppiaMobileActivity.this, TagSelectActivity.class));
+                }
+            });
+            }
+        });
+    }
 	private void createLanguageDialog() {
 		ArrayList<Lang> langs = new ArrayList<Lang>();
 		for(Course m: courses){
 			langs.addAll(m.getLangs());
 		}
-		
-		UIUtils ui = new UIUtils();
-    	ui.createLanguageDialog(this, langs, prefs, new Callable<Boolean>() {	
-			public Boolean call() throws Exception {
-				OppiaMobileActivity.this.onStart();
-				return true;
-			}
-		});
+
+        UIUtils.createLanguageDialog(this, langs, prefs, new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                OppiaMobileActivity.this.onStart();
+                return true;
+            }
+        });
 	}
-	
+
 	private void logout() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setCancelable(false);
@@ -302,47 +330,38 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 			public void onClick(DialogInterface dialog, int which) {
 				// wipe user prefs
 				Editor editor = prefs.edit();
-				editor.putString("prefUsername", "");
-				editor.putString("prefApiKey", "");
-				editor.putInt("prefBadges", 0);
-				editor.putInt("prefPoints", 0);
-                editor.putLong("lastClientSync", 0L);
-                editor.commit();
+				editor.putString(PrefsActivity.PREF_USER_NAME, "");
+				editor.putLong("lastClientSync", 0L);
+				editor.commit();
 
 				// restart the app
 				OppiaMobileActivity.this.startActivity(new Intent(OppiaMobileActivity.this, StartUpActivity.class));
 				OppiaMobileActivity.this.finish();
-
 			}
 		});
-		builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				return; // do nothing
-			}
-		});
+		builder.setNegativeButton(R.string.no, null);
 		builder.show();
 	}
 
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		getMenuInflater().inflate(R.menu.course_context_menu, menu);
-	}
-
-	@Override
-	public boolean onContextItemSelected(android.view.MenuItem item) {
-		android.widget.AdapterView.AdapterContextMenuInfo info = (android.widget.AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-		tempCourse = (Course) info.targetView.getTag();
-		switch (item.getItemId()) {
-			case R.id.course_context_delete:
-				confirmCourseDelete();
-				return true;
-			case R.id.course_context_reset:
-				confirmCourseReset();
-				return true;
-		}
-		return true;
-	}
+    //@Override
+    public void onContextMenuItemSelected(final int position, final int itemId) {
+        checkAdminPermission(itemId, new AdminSecurityManager.AuthListener() {
+            public void onPermissionGranted() {
+                tempCourse = courses.get(position);
+                if (itemId == R.id.course_context_delete) {
+                    if (prefs.getBoolean(PrefsActivity.PREF_DELETE_COURSE_ENABLED, true)){
+                        confirmCourseDelete();
+                    } else {
+                        Toast.makeText(OppiaMobileActivity.this, getString(R.string.warning_delete_disabled), Toast.LENGTH_LONG).show();
+                    }
+                } else if (itemId == R.id.course_context_reset) {
+                    confirmCourseReset();
+                } else if (itemId == R.id.course_context_update_activity){
+                    confirmCourseUpdateActivity();
+                }
+            }
+        });
+    }
 
 	private void confirmCourseDelete() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -351,18 +370,18 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 		builder.setMessage(R.string.course_context_delete_confirm);
 		builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				// remove db records
-				DbHelper db = new DbHelper(OppiaMobileActivity.this);
-				db.deleteCourse(tempCourse.getCourseId());
-				DatabaseManager.getInstance().closeDatabase();
+                DeleteCourseTask task = new DeleteCourseTask(OppiaMobileActivity.this);
+                ArrayList<Object> payloadData = new ArrayList<Object>();
+                payloadData.add(tempCourse);
+                Payload p = new Payload(payloadData);
+                task.setOnDeleteCourseListener(OppiaMobileActivity.this);
+                task.execute(p);
 
-				// remove files
-				File f = new File(tempCourse.getLocation());
-				FileUtils.deleteDir(f);
-				Editor e = prefs.edit();
-				e.putLong("prefLastMediaScan", 0);
-				e.commit();
-				displayCourses(userId);
+                progressDialog = new ProgressDialog(OppiaMobileActivity.this);
+                progressDialog.setMessage("Deleting course...");
+                progressDialog.setCancelable(false);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.show();
 			}
 		});
 		builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
@@ -379,84 +398,194 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 		builder.setTitle(R.string.course_context_reset);
 		builder.setMessage(R.string.course_context_reset_confirm);
 		builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				DbHelper db = new DbHelper(OppiaMobileActivity.this);
-				long userId = db.getUserId(prefs.getString("prefUsername", ""));
-				db.resetCourse(tempCourse.getCourseId(),userId);
-				DatabaseManager.getInstance().closeDatabase();
-				displayCourses(userId);
-			}
-		});
+            public void onClick(DialogInterface dialog, int which) {
+                DbHelper db = new DbHelper(OppiaMobileActivity.this);
+                db.resetCourse(tempCourse.getCourseId(), OppiaMobileActivity.this.userId);
+                DatabaseManager.getInstance().closeDatabase();
+                displayCourses(userId);
+            }
+        });
 		builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				tempCourse = null;
-			}
-		});
+            public void onClick(DialogInterface dialog, int which) {
+                tempCourse = null;
+            }
+        });
 		builder.show();
+	}
+	
+	private void confirmCourseUpdateActivity(){
+        UpdateCourseActivityTask task = new UpdateCourseActivityTask(OppiaMobileActivity.this, this.userId);
+        ArrayList<Object> payloadData = new ArrayList<Object>();
+        payloadData.add(tempCourse);
+        Payload p = new Payload(payloadData);
+        task.setUpdateActivityListener(OppiaMobileActivity.this);
+        task.execute(p);
+
+        progressDialog = new ProgressDialog(OppiaMobileActivity.this);
+        progressDialog.setMessage("Updating activity...");
+        progressDialog.setCancelable(false);
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.show();
 	}
 
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		if(key.equalsIgnoreCase("prefServer")){
+		
+		if(key.equalsIgnoreCase(PrefsActivity.PREF_SERVER)){
 			Editor editor = sharedPreferences.edit();
-			if(!sharedPreferences.getString("prefServer", "").endsWith("/")){
-				String newServer = sharedPreferences.getString("prefServer", "").trim()+"/";
-				editor.putString("prefServer", newServer);
+			if(!sharedPreferences.getString(PrefsActivity.PREF_SERVER, "").endsWith("/")){
+				String newServer = sharedPreferences.getString(PrefsActivity.PREF_SERVER, "").trim()+"/";
+				editor.putString(PrefsActivity.PREF_SERVER, newServer);
 		    	editor.commit();
 			}
 		}
-		if(key.equalsIgnoreCase("prefShowScheduleReminders") || key.equalsIgnoreCase("prefNoScheduleReminders")){
+		
+		if(key.equalsIgnoreCase(PrefsActivity.PREF_SHOW_SCHEDULE_REMINDERS) || key.equalsIgnoreCase(PrefsActivity.PREF_NO_SCHEDULE_REMINDERS)){
 			displayCourses(userId);
 		}
-		if(key.equalsIgnoreCase("prefPoints")
-				|| key.equalsIgnoreCase("prefBadges")){
+
+		if(key.equalsIgnoreCase(PrefsActivity.PREF_DOWNLOAD_VIA_CELLULAR_ENABLED)){
+			boolean newPref = sharedPreferences.getBoolean(PrefsActivity.PREF_DOWNLOAD_VIA_CELLULAR_ENABLED, false);
+			Log.d(TAG, "PREF_DOWNLOAD_VIA_CELLULAR_ENABLED" + newPref);
+		}
+		
+		// update the points/badges by invalidating the menu
+		if(key.equalsIgnoreCase(PrefsActivity.PREF_TRIGGER_POINTS_REFRESH)){
 			supportInvalidateOptionsMenu();
 		}
 	}
 
+    //region ScanMedia
+    ///Everything related to the ScanMediaTask, including UI management
+
+    private void scanMedia() {
+        long now = System.currentTimeMillis()/1000;
+        long lastScan = prefs.getLong(PrefsActivity.PREF_LAST_MEDIA_SCAN, 0);
+        if (lastScan + MobileLearning.MEDIA_SCAN_TIME_LIMIT > now) {
+            hideScanMediaMessage();
+            return;
+        }
+        ScanMediaTask task = new ScanMediaTask(this);
+        Payload p = new Payload(this.courses);
+        task.setScanMediaListener(this);
+        task.execute(p);
+    }
+
+    private void updateLastScan(long scanTime){
+        Editor e = prefs.edit();
+        e.putLong(PrefsActivity.PREF_LAST_MEDIA_SCAN, scanTime);
+        e.commit();
+    }
+
+    private void animateScanMediaMessage(){
+        TranslateAnimation anim = new TranslateAnimation(0, 0, -200, 0);
+        anim.setDuration(900);
+        messageContainer.startAnimation(anim);
+
+        ValueAnimator animator = ValueAnimator.ofInt(initialCourseListPadding, 90);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            //@Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                courseList.setPadding(0, (Integer) valueAnimator.getAnimatedValue(), 0, 0);
+                courseList.setSelectionAfterHeaderView();
+            }
+        });
+        animator.setStartDelay(200);
+        animator.setDuration(700);
+        animator.start();
+    }
+
+    private void hideScanMediaMessage(){
+        messageContainer.setVisibility(View.GONE);
+        courseList.setPadding(0, initialCourseListPadding, 0, 0);
+    }
+
+    //Implementation of ScanMediaListener
 	public void scanStart() {
-		TextView tv = (TextView) this.findViewById(R.id.home_message);
-		tv.setText(this.getString(R.string.info_scan_media_start));
+        messageText.setText(this.getString(R.string.info_scan_media_start));
 	}
 
 	public void scanProgressUpdate(String msg) {
-		TextView tv = (TextView) this.findViewById(R.id.home_message);
-		tv.setText(this.getString(R.string.info_scan_media_checking, msg));
+        messageText.setText(this.getString(R.string.info_scan_media_checking, msg));
 	}
 
 	public void scanComplete(Payload response) {
-		Editor e = prefs.edit();
-		LinearLayout ll = (LinearLayout) this.findViewById(R.id.home_messages);
-		TextView tv = (TextView) this.findViewById(R.id.home_message);
-		Button btn = (Button) this.findViewById(R.id.message_action_button);
-		
 		if (response.getResponseData().size() > 0) {
-			ll.setVisibility(View.VISIBLE);
-			tv.setText(this.getString(R.string.info_scan_media_missing));
-			btn.setText(this.getString(R.string.scan_media_download_button));
-			btn.setTag(response.getResponseData());
-			btn.setOnClickListener(new OnClickListener() {
+            if (messageContainer.getVisibility() != View.VISIBLE){
+                messageContainer.setVisibility(View.VISIBLE);
+                messageButton.setOnClickListener(new OnClickListener() {
 
-				public void onClick(View view) {
-					@SuppressWarnings("unchecked")
-					ArrayList<Object> m = (ArrayList<Object>) view.getTag();
-					Intent i = new Intent(OppiaMobileActivity.this, DownloadMediaActivity.class);
-					Bundle tb = new Bundle();
-					tb.putSerializable(DownloadMediaActivity.TAG, m);
-					i.putExtras(tb);
-					startActivity(i);
-				}
-			});
-			e.putLong("prefLastMediaScan", 0);
-			e.commit();
+                    public void onClick(View view) {
+                        @SuppressWarnings("unchecked")
+                        ArrayList<Object> m = (ArrayList<Object>) view.getTag();
+                        Intent i = new Intent(OppiaMobileActivity.this, DownloadMediaActivity.class);
+                        Bundle tb = new Bundle();
+                        tb.putSerializable(DownloadMediaActivity.TAG, m);
+                        i.putExtras(tb);
+                        startActivity(i);
+                    }
+                });
+                animateScanMediaMessage();
+            }
+
+            messageText.setText(this.getString(R.string.info_scan_media_missing));
+            messageButton.setText(this.getString(R.string.scan_media_download_button));
+            messageButton.setTag(response.getResponseData());
+            updateLastScan(0);
 		} else {
-			ll.setVisibility(View.GONE);
-			tv.setText("");
-			btn.setText("");
-			btn.setOnClickListener(null);
-			btn.setTag(null);
+            hideScanMediaMessage();
+            messageButton.setOnClickListener(null);
+            messageButton.setTag(null);
 			long now = System.currentTimeMillis()/1000;
-			e.putLong("prefLastMediaScan", now);
-			e.commit();
+			updateLastScan(now);
 		}
 	}
+    //endregion
+
+    //@Override
+    public void onCourseDeletionComplete(Payload response) {
+        if (response.isResult()){
+            updateLastScan(0);
+        }
+        if (progressDialog != null){
+            progressDialog.dismiss();
+        }
+        displayCourses(userId);
+    }
+
+    /* CourseInstallerListener implementation */
+    // @Override
+    public void onInstallComplete(String fileUrl) {
+        Toast.makeText(this, this.getString(R.string.install_complete), Toast.LENGTH_LONG).show();
+        displayCourses(userId);
+    }
+    public void onDownloadProgress(String fileUrl, int progress) {}
+    public void onInstallProgress(String fileUrl, int progress) {}
+    public void onInstallFailed(String fileUrl, String message) {}
+
+	public void updateActivityComplete(Payload response) {
+        if (progressDialog != null){
+            progressDialog.dismiss();
+        }
+        displayCourses(userId);
+	}
+
+	public void updateActivityProgressUpdate(DownloadProgress dp) {
+
+	}
+
+    private void checkAdminPermission(int actionId, AdminSecurityManager.AuthListener authListener){
+
+        boolean adminPasswordRequired = AdminSecurityManager.isActionProtected(this, actionId);
+        if (adminPasswordRequired) {
+            PasswordDialogFragment passDialog = new PasswordDialogFragment();
+            passDialog.setListener(authListener);
+            passDialog.show(getFragmentManager(), TAG);
+        }
+        else{
+            //If the admin password is not needed, we simply call the listener method
+            authListener.onPermissionGranted();
+        }
+
+    }
+
 }

@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ package org.digitalcampus.oppia.fragments;
 
 import java.util.ArrayList;
 
-import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
@@ -32,6 +32,7 @@ import org.digitalcampus.oppia.task.ClientDataSyncTask;
 import org.digitalcampus.oppia.task.ClientTrackerTask;
 import org.digitalcampus.oppia.task.Payload;
 import org.digitalcampus.oppia.task.SubmitTrackerMultipleTask;
+import org.bright.future.oppia.mobile.learning.R;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -55,8 +56,7 @@ public class StatsFragment extends Fragment implements TrackerServiceListener, C
 	private long userId;
 	
 	public static StatsFragment newInstance() {
-		StatsFragment myFragment = new StatsFragment();
-	    return myFragment;
+        return new StatsFragment();
 	}
 
 	public StatsFragment(){
@@ -83,7 +83,7 @@ public class StatsFragment extends Fragment implements TrackerServiceListener, C
 		prefs = PreferenceManager.getDefaultSharedPreferences(super.getActivity());
 		
 		DbHelper db = new DbHelper(super.getActivity());
-		userId = db.getUserId(prefs.getString("prefUsername", ""));
+		userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
 		DatabaseManager.getInstance().closeDatabase();
 		
 		sentTV = (TextView) super.getActivity().findViewById(R.id.stats_submitted);
@@ -137,8 +137,8 @@ public class StatsFragment extends Fragment implements TrackerServiceListener, C
 	
 	private void updateUnsent(){
 		DbHelper db = new DbHelper(super.getActivity());
-		ArrayList<ClientSession> clientSessions = new ArrayList<ClientSession>(db.getUnsentClientTrackers(prefs.getString("prefUsername", "")));
-		ArrayList<Client> clientsUnsent = new ArrayList<Client>(db.getClientsForUpdates(prefs.getString("prefUsername",""), prefs.getLong("lastClientSync", 0L)));
+		ArrayList<ClientSession> clientSessions = new ArrayList<ClientSession>(db.getUnsentClientTrackers(prefs.getString(PrefsActivity.PREF_USER_NAME, "")));
+		ArrayList<Client> clientsUnsent = new ArrayList<Client>(db.getClientsForUpdates(prefs.getString(PrefsActivity.PREF_USER_NAME, ""), prefs.getLong("lastClientSync", 0L)));
 		unsentTV.setText(String.valueOf( (db.getUnsentTrackersCount(userId) + clientsUnsent.size() + clientSessions.size() ) ));
 		DatabaseManager.getInstance().closeDatabase();
 	}

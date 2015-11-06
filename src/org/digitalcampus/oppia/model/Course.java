@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +17,18 @@
 
 package org.digitalcampus.oppia.model;
 
+import org.digitalcampus.oppia.application.MobileLearning;
+import org.digitalcampus.oppia.exception.CourseNotFoundException;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
-
-import org.digitalcampus.oppia.application.MobileLearning;
-import org.digitalcampus.oppia.exception.CourseNotFoundException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 public class Course implements Serializable {
 	
@@ -38,11 +39,9 @@ public class Course implements Serializable {
 	
 	public static final String TAG = Course.class.getSimpleName();
 	private int courseId;
-	private String location;
 	private ArrayList<Lang> titles = new ArrayList<Lang>();
 	private ArrayList<Lang> descriptions = new ArrayList<Lang>();
 	private String shortname;
-	private float progress = 0;
 	private Double versionId;
 	private boolean installed;
 	private boolean toUpdate;
@@ -56,9 +55,14 @@ public class Course implements Serializable {
 	private String scheduleURI;
 	private boolean isDraft = false;
 	private int priority = 0;
+	private int noActivities = 0;
+	private int noActivitiesCompleted = 0;
+	private int noActivitiesStarted = 0;
 	
-	public Course() {
-
+	private String root;
+	
+	public Course(String root) {
+		this.root = root;
 	}	
 	
 	public boolean validate() throws CourseNotFoundException{
@@ -69,6 +73,7 @@ public class Course implements Serializable {
 			return true;
 		}
 	}
+	
 	public Double getScheduleVersionID() {
 		return scheduleVersionID;
 	}
@@ -89,6 +94,10 @@ public class Course implements Serializable {
 		return imageFile;
 	}
 
+	public String getImageFileFromRoot() {
+		return this.root + File.separator + FileUtils.APP_COURSES_DIR_NAME + File.separator + this.getShortname() + File.separator + imageFile;
+	}
+	
 	public void setImageFile(String imageFile) {
 		this.imageFile = imageFile;
 	}
@@ -141,6 +150,10 @@ public class Course implements Serializable {
 	public void setDownloadUrl(String downloadUrl) {
 		this.downloadUrl = downloadUrl;
 	}
+	
+	public String getTrackerLogUrl(){
+		return String.format(MobileLearning.COURSE_ACTIVITY_PATH, this.getShortname());
+	}
 
 	public Double getVersionId() {
 		return versionId;
@@ -166,12 +179,13 @@ public class Course implements Serializable {
 		this.toUpdate = toUpdate;
 	}
 
-	public float getProgress() {
-		return progress;
-	}
-
-	public void setProgress(float progress) {
-		this.progress = progress;
+	public float getProgressPercent() {
+		// prevent divide by zero errors
+		if (this.noActivities != 0){
+			return this.noActivitiesCompleted*100/this.noActivities;
+		} else {
+			return 0;
+		}
 	}
 
 	public String getShortname() {
@@ -186,24 +200,20 @@ public class Course implements Serializable {
 		return courseId;
 	}
 
-	public void setModId(int courseId) {
+	public void setCourseId(int courseId) {
 		this.courseId = courseId;
 	}
 
 	public String getLocation() {
-		if (location.endsWith("/")){
-			return location;
-		} else {
-			return location + "/";
-		}
+		return this.root + File.separator + FileUtils.APP_COURSES_DIR_NAME + File.separator + this.getShortname() + File.separator;
+		
 	}
 
 	public String getCourseXMLLocation(){
-		return this.getLocation() + MobileLearning.COURSE_XML;
+		//String root = prefs.getString(PrefsActivity.PREF_STORAGE_LOCATION, "");
+		return this.root + File.separator + FileUtils.APP_COURSES_DIR_NAME + File.separator + this.getShortname() + File.separator + MobileLearning.COURSE_XML;
 	}
-	public void setLocation(String location) {
-		this.location = location;
-	}
+	
 
 	public String getTitle(String lang) {
 		for(Lang l: titles){
@@ -359,6 +369,34 @@ public class Course implements Serializable {
 
 	public void setPriority(int priority) {
 		this.priority = priority;
+	}
+
+	public int getNoActivities() {
+		return noActivities;
+	}
+
+	public void setNoActivities(int noActivities) {
+		this.noActivities = noActivities;
+	}
+
+	public int getNoActivitiesCompleted() {
+		return noActivitiesCompleted;
+	}
+
+	public void setNoActivitiesCompleted(int noActivitiesCompleted) {
+		this.noActivitiesCompleted = noActivitiesCompleted;
+	}
+
+	public int getNoActivitiesStarted() {
+		return noActivitiesStarted;
+	}
+
+	public void setNoActivitiesStarted(int noActivitiesStarted) {
+		this.noActivitiesStarted = noActivitiesStarted;
+	}
+	
+	public int getNoActivitiesNotStarted(){
+		return this.getNoActivities() - this.getNoActivitiesCompleted() - this.getNoActivitiesStarted();
 	}
 	
 	

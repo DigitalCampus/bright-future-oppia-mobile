@@ -13,6 +13,7 @@ import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.MobileLearning;
 
 import android.content.Context;
@@ -32,11 +33,11 @@ public class HTTPConnectionUtils extends DefaultHttpClient {
 		this.httpParameters = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(
 				httpParameters,
-				Integer.parseInt(prefs.getString("prefServerTimeoutConnection",
+				Integer.parseInt(prefs.getString(PrefsActivity.PREF_SERVER_TIMEOUT_CONN,
 						ctx.getString(R.string.prefServerTimeoutConnectionDefault))));
 		HttpConnectionParams.setSoTimeout(
 				httpParameters,
-				Integer.parseInt(prefs.getString("prefServerTimeoutConnection",
+				Integer.parseInt(prefs.getString(PrefsActivity.PREF_SERVER_TIMEOUT_CONN,
 						ctx.getString(R.string.prefServerTimeoutResponseDefault))));
 		
 		// add user agent 
@@ -51,25 +52,18 @@ public class HTTPConnectionUtils extends DefaultHttpClient {
 		super.getParams().setParameter(CoreProtocolPNames.USER_AGENT, MobileLearning.USER_AGENT + v);
 	}
 	
-	public BasicHeader getAuthHeader(){
-		return new BasicHeader("Authorization","ApiKey " + 
-				prefs.getString("prefUsername", "") + 
-				":" + 
-				prefs.getString("prefApiKey", ""));
-	}
-	
 	public BasicHeader getAuthHeader(String username, String apiKey){
 		return new BasicHeader("Authorization","ApiKey " + username + ":" + apiKey);
 	}
 	
 	public String getFullURL(String apiPath){
-		return prefs.getString("prefServer", ctx.getString(R.string.prefServerDefault)) + apiPath;
+		return prefs.getString(PrefsActivity.PREF_SERVER, ctx.getString(R.string.prefServerDefault)) + apiPath;
 	}
 
-	public String createUrlWithCredentials(String baseUrl){
+	public String createUrlWithCredentials(String baseUrl, String username, String apiKey){
 		List<NameValuePair> pairs = new LinkedList<NameValuePair>();
-		pairs.add(new BasicNameValuePair("username", prefs.getString("prefUsername", "")));
-		pairs.add(new BasicNameValuePair("api_key", prefs.getString("prefApiKey", "")));
+		pairs.add(new BasicNameValuePair("username", username));
+		pairs.add(new BasicNameValuePair("api_key", apiKey));
 		pairs.add(new BasicNameValuePair("format", "json"));
 		String paramString = URLEncodedUtils.format(pairs, "utf-8");
 		if(!baseUrl.endsWith("?"))

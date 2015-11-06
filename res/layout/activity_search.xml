@@ -17,6 +17,7 @@
             android:layout_alignParentStart="true"
             android:layout_toStartOf="@+id/searchbutton"
             android:layout_weight="1"
+			android:imeOptions="actionSearch"
             android:inputType="text" />
 
         <ImageView
@@ -32,17 +33,36 @@
         android:id="@+id/search_results_summary"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
         android:visibility="gone"
         android:gravity="center"
-        style="@style/NormalTextBoldDark"/>
+        style="@style/NormalTextBoldDark"
+        android:paddingTop="0dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:paddingBottom="5dp" />
 
-    <ListView
-        android:id="@+id/search_results_list"
+    <FrameLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:divider="@color/list_divider_light"
-        android:listSelector="@drawable/background_change_pressed"
-        android:dividerHeight="1dp" />
+        android:layout_height="fill_parent">
+
+        <ListView
+            android:id="@+id/search_results_list"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:divider="@color/list_divider_light"
+            android:listSelector="@drawable/background_change_pressed"
+            android:dividerHeight="1dp" />
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+
 
 </LinearLayout>

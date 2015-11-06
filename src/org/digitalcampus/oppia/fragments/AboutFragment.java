@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,10 @@ package org.digitalcampus.oppia.fragments;
 import java.util.Locale;
 
 import org.bright.future.oppia.mobile.learning.R;
-import org.digitalcampus.oppia.application.MobileLearning;
-import org.digitalcampus.oppia.utils.FileUtils;
+import org.digitalcampus.oppia.activity.PrefsActivity;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
+
+import com.splunk.mint.Mint;
 
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -34,8 +36,6 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
-
-import com.bugsense.trace.BugSenseHandler;
 
 public class AboutFragment extends Fragment{
 
@@ -72,10 +72,10 @@ public class AboutFragment extends Fragment{
 		
 		prefs = PreferenceManager.getDefaultSharedPreferences(super.getActivity());
 		webView = (WebView) super.getActivity().findViewById(R.id.about_webview);
-		String lang = prefs.getString("prefLanguage", Locale.getDefault().getLanguage());
+		String lang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
 		String url = FileUtils.getLocalizedFilePath(super.getActivity(),lang, "about.html");
 
-		int defaultFontSize = Integer.parseInt(prefs.getString("prefTextSize", "16"));
+		int defaultFontSize = Integer.parseInt(prefs.getString(PrefsActivity.PREF_TEXT_SIZE, "16"));
 		webView.getSettings().setDefaultFontSize(defaultFontSize);
 		
 		webView.loadUrl(url);
@@ -85,11 +85,8 @@ public class AboutFragment extends Fragment{
 			String no = super.getActivity().getPackageManager().getPackageInfo(super.getActivity().getPackageName(), 0).versionName;
 			versionNo.setText(getString(R.string.version,no));
 		} catch (NameNotFoundException e) {
-			if(!MobileLearning.DEVELOPER_MODE){
-				BugSenseHandler.sendException(e);
-			} else {
-				e.printStackTrace();
-			}
+			Mint.logException(e);
+			e.printStackTrace();
 		}
 	}
 }

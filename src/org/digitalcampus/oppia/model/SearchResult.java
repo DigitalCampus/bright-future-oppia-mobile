@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,8 @@ public class SearchResult implements Serializable, SearchOutput{
 	private Course course;
 	private Activity activity;
 	private Section section;
-    private float rank;
+	
+	private float rank;
 	
 	public Course getCourse() {
 		return course;

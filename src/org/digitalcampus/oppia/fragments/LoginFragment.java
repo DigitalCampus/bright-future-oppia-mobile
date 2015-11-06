@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@ import java.util.ArrayList;
 
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.activity.RoutingActivity;
+import org.digitalcampus.oppia.activity.OppiaMobileActivity;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.listener.SubmitListener;
 import org.digitalcampus.oppia.model.User;
 import org.digitalcampus.oppia.task.LoginTask;
@@ -48,12 +50,10 @@ public class LoginFragment extends Fragment implements SubmitListener {
 	private SharedPreferences prefs;
 	private EditText usernameField;
 	private EditText passwordField;
-	private Button loginButton;
 	private ProgressDialog pDialog;
 	
 	public static LoginFragment newInstance() {
-		LoginFragment myFragment = new LoginFragment();
-	    return myFragment;
+        return new LoginFragment();
 	}
 
 	public LoginFragment(){
@@ -76,16 +76,16 @@ public class LoginFragment extends Fragment implements SubmitListener {
 		prefs = PreferenceManager.getDefaultSharedPreferences(super.getActivity());
 		usernameField = (EditText) super.getActivity().findViewById(R.id.login_username_field);
         passwordField = (EditText) super.getActivity().findViewById(R.id.login_password_field);
-        loginButton = (Button) super.getActivity().findViewById(R.id.login_btn);
+        Button loginButton = (Button) super.getActivity().findViewById(R.id.login_btn);
         loginButton.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				onLoginClick(v);
+				onLoginClick();
 			}
 		});
 	}
 	
-	protected void onLoginClick(View view){
+	protected void onLoginClick(){
 		String username = usernameField.getText().toString();
     	//check valid email address format
     	if(username.length() == 0){
@@ -125,13 +125,9 @@ public class LoginFragment extends Fragment implements SubmitListener {
 			User u = (User) response.getData().get(0);
 			// set params
 			Editor editor = prefs.edit();
-	    	editor.putString("prefUsername", usernameField.getText().toString());
-	    	editor.putString("prefApiKey", u.getApiKey());
-	    	editor.putString("prefDisplayName", u.getDisplayName());
-	    	editor.putInt("prefPoints", u.getPoints());
-	    	editor.putInt("prefBadges", u.getBadges());
-	    	editor.putBoolean("prefScoringEnabled", u.isScoringEnabled());
-	    	editor.putBoolean("prefBadgingEnabled", u.isBadgingEnabled());
+	    	editor.putString(PrefsActivity.PREF_USER_NAME, usernameField.getText().toString());
+	    	editor.putBoolean(PrefsActivity.PREF_SCORING_ENABLED, u.isScoringEnabled());
+	    	editor.putBoolean(PrefsActivity.PREF_BADGING_ENABLED, u.isBadgingEnabled());
 	    	editor.commit();
 	    	
 			// return to main activity

@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,20 +26,20 @@ import org.digitalcampus.oppia.fragments.LoginFragment;
 import org.digitalcampus.oppia.fragments.RegisterFragment;
 import org.digitalcampus.oppia.fragments.ResetFragment;
 import org.digitalcampus.oppia.fragments.WelcomeFragment;
+import org.digitalcampus.oppia.model.Lang;
 
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentActivity;
+import android.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.view.Menu;
+import android.view.MenuItem;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-
-public class WelcomeActivity extends SherlockFragmentActivity implements ActionBar.TabListener  {
+public class WelcomeActivity extends FragmentActivity implements ActionBar.TabListener  {
 
 	public static final String TAG = WelcomeActivity.class.getSimpleName();
 	private ActionBar actionBar;
@@ -52,7 +52,7 @@ public class WelcomeActivity extends SherlockFragmentActivity implements ActionB
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_about);
-		actionBar = getSupportActionBar();
+		actionBar = getActionBar();
 		viewPager = (ViewPager) findViewById(R.id.activity_about_pager);
 		
 		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -122,23 +122,28 @@ public class WelcomeActivity extends SherlockFragmentActivity implements ActionB
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_welcome, menu);
+		getMenuInflater().inflate(R.menu.activity_welcome, menu);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle item selection
-		switch (item.getItemId()) {
-		case R.id.menu_settings:
+		int itemId = item.getItemId();
+		if (itemId == R.id.menu_settings) {
 			Intent i = new Intent(this, PrefsActivity.class);
+			Bundle tb = new Bundle();
+			ArrayList<Lang> langs = new ArrayList<Lang>();
+			Lang lang = new Lang("en","English");
+			langs.add(lang);
+			tb.putSerializable("langs", langs);
+			i.putExtras(tb);
 			startActivity(i);
 			return true;
-		case R.id.menu_about:
+		} else if (itemId == R.id.menu_about) {
 			Intent iA = new Intent(this, AboutActivity.class);
 			startActivity(iA);
 			return true;
-		default:
+		} else {
 			return super.onOptionsItemSelected(item);
 		}
 	}
@@ -147,5 +152,9 @@ public class WelcomeActivity extends SherlockFragmentActivity implements ActionB
 		viewPager.setCurrentItem(tab);
 		this.currentTab = tab;
 	}
+	 @Override
+	    public void onBackPressed() {
+		 moveTaskToBack(true);
+	 }
 }
 

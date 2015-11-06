@@ -95,7 +95,7 @@ public class ClientRegActivity extends AppActivity {
 		PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
 
 		//disable client name & phone number & husband name as per client request
-		nameClientEditText.setText(prefs.getString("prefUsername", "")+"Client"+toAppendClientName);
+		nameClientEditText.setText(prefs.getString(PrefsActivity.PREF_USER_NAME, "")+"Client"+toAppendClientName);
 		phoneNumberClientEditText.setText("99999999999");
 		husbandNameClientEditText.setText("");
 		nameClientEditText.setEnabled(false);
@@ -274,7 +274,7 @@ public class ClientRegActivity extends AppActivity {
 
         counsellingButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Course c = (Course) db.getCourse(db.getCourseID("us-counsel"), db.getUserId(prefs.getString("prefUsername", "")));
+                Course c = (Course) db.getCourse(db.getCourseID("us-counsel"), db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, "")));
                 clientName = (String) nameClientEditText.getText().toString().trim();
                 clientPhoneNumber = (String) phoneNumberClientEditText.getText().toString();
                 clientAge = (String) ageClientEditText.getText().toString();
@@ -322,7 +322,7 @@ public class ClientRegActivity extends AppActivity {
                     	client.setClientName(clientName);
                     }
                     else {
-                    	client.setClientName(prefs.getString("prefUsername", "")+"Client"+toAppendClientName);
+                    	client.setClientName(prefs.getString(PrefsActivity.PREF_USER_NAME, "")+"Client"+toAppendClientName);
                     }
                    	client.setClientMobileNumber(Long.parseLong("99999999999"));
                     client.setClientAge(Integer.parseInt(clientAge));
@@ -330,7 +330,7 @@ public class ClientRegActivity extends AppActivity {
                     client.setClientMaritalStatus(clientMarried);
                     client.setClientParity(clientParity);
                     client.setClientLifeStage(clientLifeStage);
-                    client.setHealthWorker(prefs.getString("prefUsername", "")); //USER
+                    client.setHealthWorker(prefs.getString(PrefsActivity.PREF_USER_NAME, "")); //USER
 
 
                     if (childAgeRequired) {
@@ -366,7 +366,7 @@ public class ClientRegActivity extends AppActivity {
                         editor.putLong("prefClientServerID", client.getClientServerId());
                     } else {
                     	//update all old client status to 0.
-                    	db.updateClientCreatedStatus();
+                    	//db.updateClientCreatedStatus();
                         client.setClientId(db.addClient(client));
                     }
 

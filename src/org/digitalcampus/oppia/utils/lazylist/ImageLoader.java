@@ -25,11 +25,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.application.MobileLearning;
 
+import android.os.Handler;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Handler;
 import android.widget.ImageView;
 
 public class ImageLoader {

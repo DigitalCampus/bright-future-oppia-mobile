@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -54,7 +56,7 @@ public class UpgradeUtils {
             String title = ctx.getString(R.string.app_name) + " v" + versionInfo.versionName;
  
             //Includes the updates as well so users know what changed.
-            String messagePath = FileUtils.getLocalizedFilePath((Activity) ctx,prefs.getString("prefLanguage", Locale.getDefault().getLanguage()) , "upgrade.txt");
+            String messagePath = FileUtils.getLocalizedFilePath((Activity) ctx, prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()), "upgrade.txt");
             
             String message = "";
 			try {

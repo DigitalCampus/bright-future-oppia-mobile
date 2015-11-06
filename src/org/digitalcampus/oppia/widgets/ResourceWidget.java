@@ -1,3 +1,20 @@
+/* 
+ * This file is part of OppiaMobile - https://digital-campus.org/
+ * 
+ * OppiaMobile is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * OppiaMobile is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with OppiaMobile. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.digitalcampus.oppia.widgets;
 
 import java.io.File;
@@ -8,13 +25,17 @@ import java.util.Map;
 
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.activity.CourseActivity;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.application.Tracker;
 import org.digitalcampus.oppia.model.Activity;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.utils.MetaDataUtils;
+import org.digitalcampus.oppia.utils.resources.ExternalResourceOpener;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.splunk.mint.Mint;
 
 import android.content.Context;
 import android.content.Intent;
@@ -37,8 +58,6 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.bugsense.trace.BugSenseHandler;
 
 public class ResourceWidget extends WidgetFactory {
 
@@ -91,9 +110,9 @@ public class ResourceWidget extends WidgetFactory {
 		 super.onActivityCreated(savedInstanceState);
 		
 		LinearLayout ll = (LinearLayout) getView().findViewById(R.id.widget_resource_object);
-		String fileUrl = course.getLocation() + activity.getLocation(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+		String fileUrl = course.getLocation() + activity.getLocation(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		// show description if any
-		String desc = activity.getDescription(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+		String desc = activity.getDescription(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 
 		TextView descTV = (TextView) getView().findViewById(R.id.widget_resource_description);
 		if (desc.length() > 0){
@@ -180,15 +199,12 @@ public class ResourceWidget extends WidgetFactory {
 				data.put("resource", "viewed");
 				data.put("resourcefile", getResourceFileName());
 				data.put("timetaken", timeTaken);
-				String lang = prefs.getString("prefLanguage", Locale.getDefault()
+				String lang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault()
 						.getLanguage());
 				data.put("lang", lang);
 			} catch (JSONException e) {
-				if (!MobileLearning.DEVELOPER_MODE) {
-					BugSenseHandler.sendException(e);
-				} else {
-					e.printStackTrace();
-				}
+				Mint.logException(e);
+				e.printStackTrace();
 			}
 			MetaDataUtils mdu = new MetaDataUtils(super.getActivity());
 			// add in extra meta-data
@@ -210,7 +226,7 @@ public class ResourceWidget extends WidgetFactory {
 	
 	@Override
 	public void saveTracker(){
-		long timetaken = System.currentTimeMillis()/1000 - this.getStartTime();
+		long timetaken = this.getSpentTime();
 		if (timetaken < MobileLearning.RESOURCE_READ_TIME) {
 			return;
 		}
@@ -222,7 +238,7 @@ public class ResourceWidget extends WidgetFactory {
 			MetaDataUtils mdu = new MetaDataUtils(super.getActivity());
 			obj.put("timetaken", timetaken);
 			obj = mdu.getMetaData(obj);
-			String lang = prefs.getString("prefLanguage", Locale.getDefault().getLanguage());
+			String lang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
 			obj.put("lang", lang);
 			// if it's a baseline activity then assume completed
 			if(this.isBaseline){
@@ -294,11 +310,11 @@ public class ResourceWidget extends WidgetFactory {
 	
 	private class OnResourceClickListener implements OnClickListener{
 
-		private Context ctx;
+		private Context _ctx;
 		private String type;
 		
 		public OnResourceClickListener(Context ctx, String type){
-			this.ctx = ctx;
+			this._ctx = ctx;
 			this.type = type;
 		}
 
@@ -306,37 +322,21 @@ public class ResourceWidget extends WidgetFactory {
 			File file = (File) v.getTag();
 			// check the file is on the file system (should be but just in case)
 			if(!file.exists()){
-				Toast.makeText(this.ctx,this.ctx.getString(R.string.error_resource_not_found,file.getName()), Toast.LENGTH_LONG).show();
+				Toast.makeText(_ctx, _ctx.getString(R.string.error_resource_not_found,file.getName()), Toast.LENGTH_LONG).show();
 				return;
 			} 
 			Uri targetUri = Uri.fromFile(file);
-			
-			// check there is actually an app installed to open this filetype
-			
-			Intent intent = new Intent();
-			intent.setAction(android.content.Intent.ACTION_VIEW);
-			intent.setDataAndType(targetUri, type);
-			
-			PackageManager pm = this.ctx.getPackageManager();
 
-			List<ResolveInfo> infos = pm.queryIntentActivities(intent, PackageManager.GET_RESOLVED_FILTER);
-			boolean appFound = false;
-			for (ResolveInfo info : infos) {
-				IntentFilter filter = info.filter;
-				if (filter != null && filter.hasAction(Intent.ACTION_VIEW)) {
-					// Found an app with the right intent/filter
-					appFound = true;
-				}
-			}
-
-			if(appFound){
-				ResourceWidget.this.setResourceViewing(true);
-				ResourceWidget.this.setResourceStartTime(System.currentTimeMillis()/1000);
-				this.ctx.startActivity(intent);
-			} else {
-				Toast.makeText(this.ctx,this.ctx.getString(R.string.error_resource_app_not_found,file.getName()), Toast.LENGTH_LONG).show();
-			}
-			return;
+            Intent intent = ExternalResourceOpener.getIntentToOpenResource(_ctx, targetUri, type);
+            if(intent != null){
+                ResourceWidget.this.setResourceViewing(true);
+                ResourceWidget.this.setResourceStartTime(System.currentTimeMillis()/1000);
+                _ctx.startActivity(intent);
+            } else {
+                Toast.makeText(_ctx,
+                        _ctx.getString(R.string.error_resource_app_not_found, file.getName()),
+                        Toast.LENGTH_LONG).show();
+            }
 		}
 		
 	}

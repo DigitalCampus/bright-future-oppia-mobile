@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,11 @@ public class TrackerLog {
 	private long id;
 	private String digest;
 	private String content;
+	private String type;
 	private boolean submitted;
+	private boolean completed;
+	private long courseId;
+	private long userId;
 	
 	public long getId() {
 		return id;
@@ -62,6 +66,30 @@ public class TrackerLog {
 	
 	public String getDateTimeString() {
 		return MobileLearning.DATETIME_FORMAT.print(datetime);
+	}
+	public boolean isCompleted() {
+		return completed;
+	}
+	public void setCompleted(boolean completed) {
+		this.completed = completed;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
+	}
+	public long getCourseId() {
+		return courseId;
+	}
+	public void setCourseId(long courseId) {
+		this.courseId = courseId;
+	}
+	public long getUserId() {
+		return userId;
+	}
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 	
 	

@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,8 +17,9 @@
 
 package org.digitalcampus.oppia.utils;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
@@ -27,10 +28,11 @@ import org.digitalcampus.oppia.model.Activity;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.model.Lang;
 import org.digitalcampus.oppia.task.Payload;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
+import org.digitalcampus.oppia.utils.xmlreaders.CourseXMLReader;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class SearchUtils {
 
@@ -41,42 +43,47 @@ public class SearchUtils {
 		Payload p = new Payload();
 		task.execute(p);
 	}
+
+    public static void indexAddCourse(Context ctx, Course course, CourseXMLReader cxr){
+        ArrayList<Activity> activities = cxr.getActivities(course.getCourseId());
+        DbHelper db = new DbHelper(ctx);
+
+        db.beginTransaction();
+        for( Activity a : activities) {
+            ArrayList<Lang> langs = course.getLangs();
+            String fileContent = "";
+            for (Lang l : langs) {
+                if (a.getLocation(l.getLang()) != null && !a.getActType().equals("url")) {
+                    String url = course.getLocation() + a.getLocation(l.getLang());
+                    try {
+                        fileContent += " " + FileUtils.readFile(url);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            if (!fileContent.equals("")) {
+                db.insertActivityIntoSearchTable(course.getTitleJSONString(),
+                        cxr.getSection(a.getSectionId()).getTitleJSONString(),
+                        a.getTitleJSONString(),
+                        db.getActivityByDigest(a.getDigest()).getDbId(),
+                        fileContent);
+            }
+        }
+        db.endTransaction(true);
+        DatabaseManager.getInstance().closeDatabase();
+    }
 	
 	public static void indexAddCourse(Context ctx, Course course){
-		
-		try {
-			CourseXMLReader cxr = new CourseXMLReader(course.getCourseXMLLocation(),ctx);
-			ArrayList<Activity> activities = cxr.getActivities(course.getCourseId());
-			for( Activity a : activities){
-				ArrayList<Lang> langs = course.getLangs();
-				String fileContent = "";
-				for (Lang l : langs){
-					if (a.getLocation(l.getLang()) != null){
-						String url = course.getLocation() + a.getLocation(l.getLang());
-						try {
-							fileContent += " " + FileUtils.readFile(url);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}
-				}
-				
-				if (!fileContent.equals("")){
-					DbHelper db = new DbHelper(ctx);
-					db.insertActivityIntoSearchTable(course.getTitleJSONString(),
-							cxr.getSection(a.getSectionId()).getTitleJSONString(),
-							a.getTitleJSONString(),
-							db.getActivityByDigest(a.getDigest()).getDbId(), 
-							fileContent);
-					DatabaseManager.getInstance().closeDatabase();
-				}
-			
-			}
-		} catch (InvalidXMLException e) {
-			// Ignore course
-		}
-		
+        try {
+            CourseXMLReader cxr = new CourseXMLReader(course.getCourseXMLLocation(),course.getCourseId(), ctx);
+            indexAddCourse(ctx, course, cxr);
+        } catch (InvalidXMLException e) {
+            // Ignore course
+            e.printStackTrace();
+        }
+
 	}
 	
 	

@@ -66,8 +66,7 @@
     <string name="title_activity_client_info">Client Info</string>
     
     <string name="widget_feedback_submit">Submit</string>
-    <string name="widget_feedback_submit_title">Thank you!</string>
-    <string name="widget_feedback_continue">Continue &gt;&gt;</string>
+    <string name="widget_feedback_submit_title">Thank you for submitting your feedback.</string>
     
     <string name="widget_quiz_next">Next &gt;&gt;</string>
     <string name="widget_quiz_prev">&lt;&lt; Prev</string>
@@ -79,6 +78,7 @@
  	<string name="widget_quiz_baseline_completed">Thank you for completing the pre-test. You can now continue to the course.</string>
  	<string name="widget_quiz_baseline_goto_course">Continue to course &gt;&gt;</string>
  	<string name="widget_quiz_image_caption">Press the image to view larger version</string>
+ 	<string name="widget_quiz_media_caption">Press the image to start the video</string>
  	<string name="widget_quiz_feedback_response_title">You answered: </string>
  	<string name="widget_quiz_feedback_feedback_title">Feedback: </string>
  	<string name="widget_quiz_unavailable_section">You must complete all the previous activities in this section before this quiz becomes available to you.</string>
@@ -88,6 +88,7 @@
  	
  	<string name="course_context_reset">Reset</string>
  	<string name="course_context_delete">Delete</string>
+ 	<string name="course_context_update_activity">Update activity</string>
  	<string name="course_context_reset_confirm">Are you sure you want to reset this course? It will remove all the progress logs for this course.</string>
  	<string name="course_context_delete_confirm">Are you sure you want to delete this course? It will completely remove the course from your phone.</string>
  	
@@ -112,8 +113,20 @@
 	<string name="prefTextSize">Text size</string>
 	<string name="prefUser">Username</string>
 	<string name="prefUserHint">(read only)</string>
-	
-	<string name="notification_course_update_title">New course updates</string>
+	<string name="prefLogoutEnabled">Enable logout from homepage</string>
+	<string name="prefDeleteCourseEnabled">Enable deleting of courses</string>
+	<string name="prefDownloadViaCellularEnabled">Download media via cellular network</string>
+
+    <!-- Strings relative to Storage -->
+    <string name="prefStorageLocation">Storage Location</string>
+    <string name="prefStorageOptionInternal">Internal</string>
+    <string name="prefStorageOptionExternal">External</string>
+    <string name="moving_storage_location">Moving files to new storage location…</string>
+    <string name="move_storage_completed">Moving storage completed</string>
+    <string name="storageNonRemovable">Non-removable storage</string>
+    <string name="storageRemovable">Removable SD Card</string>
+
+    <string name="notification_course_update_title">New course updates</string>
 	<string name="notification_course_update_text">Updates are available for your courses.</string>
 	
 	<string name="title_login">Login</string>
@@ -126,12 +139,13 @@
 	<string name="register_form_firstname_title">First name (*)</string>
 	<string name="register_form_jobtitle_title">Job Title</string>
 	<string name="register_form_lastname_title">Last name (*)</string>
-	<string name="register_form_organisation_title">Organsiation</string>
+	<string name="register_form_organisation_title">Organisation</string>
 	<string name="register_form_password_title">Password (*)</string>
 	<string name="register_form_password_again_title">Password (again) (*)</string>
+	<string name="register_form_phoneno_title">Phone number (*)</string>
 	<string name="register_btn_text">Register</string>
 	
-	<string name="reset_username_title">Username</string>
+	<string name="reset_username_title">Username or Email</string>
 	
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
@@ -147,6 +161,7 @@
 	<string name="download">Download</string>
 	<string name="downloaded">Downloaded</string>
 	<string name="open">Open</string>
+	<string name="storage_default">Default</string> 
 	
 	<string name="alert_pretest">Pre-test</string>
 	<string name="alert_pretest_summary">This course contains a pre-test which you need to complete before you can view the full course.</string>
@@ -188,6 +203,8 @@
 	<string name="scan_media_download_via_pc_button">Download via PC</string>
 	<string name="success_media_download">Media file: \'%1$s\' successfully downloaded.</string>
 	<string name="media_file_size">%1$.1fMb</string>
+    <string name="notification_media_title">OppiaMobile: media management</string>
+    <string name="notification_media_subject">All media files downloaded successfully</string>
 	
 	<string name="error_connection">Error connecting to server. Please check you have an active internet connection and try again.</string>
 	<string name="error_connection_required">You need an active internet connection to access this page. Please turn on wifi or mobile internet connection and try again.</string>
@@ -202,13 +219,15 @@
 	<string name="error_register_password">Your password must be at least %1$d or more characters</string>
 	<string name="error_register_password_no_match">Your passwords don\'t match</string>
 	<string name="error_register_no_firstname">Please enter your first name</string>
-    <string name="error_register_no_lastname">Please enter your last name</string>
+	<string name="error_register_no_lastname">Please enter your last name</string>
+	<string name="error_register_no_phoneno">Please enter your phone number</string>
 	<string name="error_register_no_username">Please enter a username</string>
 	<string name="error_register_username_spaces">Your username cannot contain spaces</string>
 	<string name="error_resource_app_not_found">You don\'t seem to have an app installed to open \'%1$s\'. Please install an app capable of opening this type of file.</string>
 	<string name="error_resource_not_found">File: \'%1$s\' not found.</string>
 
-    <string name="error_sdcard">Your SD card is not available - please restart this app when the SD card is available.\nThe app will now close.</string>
+    <string name="error_insufficient_storage_available">Insufficient storage available</string>
+	<string name="error_sdcard">Your SD card is not available - please restart this app when the SD card is available.\nThe app will now close.</string>
 	<string name="error_media_not_found">Media file: \'%1$s\' not found.</string>
 	<string name="error_media_unsupported">\'%1$s\' does not appear to be a supported media file type.</string>
 	<string name="error_download_failure">Download failed</string>
@@ -218,6 +237,8 @@
 	<string name="error_reading_xml">An error occurred trying to load the course. Please reinstall the course.</string>
 	<string name="error_tts_start">Text To Speech failed. Please check your phone to ensure have Text to Speech installed and enabled</string>
 	<string name="warning_wifi_required">You must be connected to a wifi network to download the media files.\nPlease connect to a wifi network to download the media files on your phone, or download the files via your PC.</string>
+	<string name="warning_delete_disabled">Sorry, deleting a course is currently disabled - please update your settings to allow deleting of courses.</string>
+	<string name="warning_download_via_cellular_enabled">Warning! Allowing media files to be downloaded via your mobile (cellular) network may incur high charges for data download.\n\n It is not recommended to enable this if you are on a slow mobile network.</string>
 	
 	<string name="login_process">Logging in</string>
 	<string name="login_complete">Logged in</string>
@@ -225,11 +246,11 @@
 	<string name="logout_confirm">Are you sure you want to logout?\n\nLogging out will remove all your activity logs from this phone. You will need an active internet connection to log in again.</string>
 	
 	<string name="register_alert_title">Register</string>
-	<string name="register_process">Registering ...</string>
+	<string name="register_process">Registering …</string>
 	<string name="register_complete">Successfully registered</string>
 	
 	<string name="reset_alert_title">Reset</string>
-	<string name="reset_process">Resetting password ...</string>
+	<string name="reset_process">Resetting password …</string>
 	<string name="reset_complete">Your password has now been reset.\n\nPlease check your email for your new password.</string>
 	
 	<string name="change_language">Change Language</string>
@@ -244,7 +265,7 @@
 	<string name="course_draft">(Draft version)</string>
 	
 	<string name="search_result_summary">%1$d results for \"%2$s\"</string>
-	<string name="search_searching">Searching...</string>
+	<string name="search_searching">Searching…</string>
 	<string name="search_no_results">No results found for \"%1$s\"</string>
 	
 	<string name="clientreg_form_name_title">Name</string>
@@ -268,6 +289,22 @@
 	<string name="submit_stats_btn_text">Send now</string>
 	
 	<string name="media_player_description">Oppia Media Player</string>
+	
+	<string name="upgradev49_1">Copying files to new location - this may take several minutes, so please be patient</string>
+    <string name="loading_course">Loading course…</string>
+    <string name="scorecard_quizzes_title">Quizzes</string>
+    <string name="scorecard_quizzes_highlight_pretest">Pre-test</string>
+    <string name="scorecard_quizzes_highlight_attempted">Attempted</string>
+    <string name="scorecard_quizzes_highlight_passed">Passed</string>
+    <string name="scorecard_activities_completed">activities completed</string>
+    <string name="scorecard_activities_total">total</string>
+
+    <string name="admin_password_required">This feature is protected for admin use only. Please, insert below the admin password to continue:</string>
+    <string name="admin_password_error_incorrect_password">Incorrect admin password. Try again</string>
+    <string name="admin_password_newpassword_dialog_title">Admin password</string>
+    <string name="admin_password_newpassword_dialog_message">Please, introduce your admin password</string>
+    <string name="prefAdminProtection">Protect admin actions with password</string>
+    <string name="prefAdminPassword">Change admin password</string>
 
     <string name="details">Details</string>
     <string name="makevisit">Make Visit</string>
@@ -295,7 +332,6 @@
     <string name="client_tracker">Client Tracker info being sent</string>
     <string name="client_registration_label">Client Registration</string>
     
-    <string name="menu_share">Share</string>
     <string name="clientreg_method_adapted_title">Adopted Method</string>
     <string name="close_client_case">Close Case</string>
     <string name="delete_client_record">Delete Client</string>

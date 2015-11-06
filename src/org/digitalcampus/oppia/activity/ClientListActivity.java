@@ -1,16 +1,5 @@
 package org.digitalcampus.oppia.activity;
 
-import java.util.ArrayList;
-
-import org.bright.future.oppia.mobile.learning.R;
-import org.digitalcampus.oppia.adapter.ClientListAdapter;
-import org.digitalcampus.oppia.application.DatabaseManager;
-import org.digitalcampus.oppia.application.DbHelper;
-import org.digitalcampus.oppia.model.Client;
-import org.digitalcampus.oppia.model.Lang;
-import org.digitalcampus.oppia.service.TrackerService;
-import org.digitalcampus.oppia.utils.UIUtils;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,8 +14,22 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
+import android.view.Menu;
+import android.view.MenuItem;
+
+import org.digitalcampus.oppia.adapter.ClientListAdapter;
+import org.digitalcampus.oppia.application.DatabaseManager;
+import org.digitalcampus.oppia.application.DbHelper;
+import org.digitalcampus.oppia.listener.ClientDataSyncListener;
+import org.digitalcampus.oppia.model.Client;
+import org.digitalcampus.oppia.model.ClientSession;
+import org.digitalcampus.oppia.model.Lang;
+import org.digitalcampus.oppia.service.TrackerService;
+import org.digitalcampus.oppia.task.Payload;
+import org.digitalcampus.oppia.utils.UIUtils;
+import org.bright.future.oppia.mobile.learning.R;
+
+import java.util.ArrayList;
 
 public class ClientListActivity extends AppActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     public static final String TAG = CourseIndexActivity.class.getSimpleName();
@@ -83,12 +86,13 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
             Client client = (Client) listView.getItemAtPosition(position);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putLong("prefClientLocalID",client.getClientId() );
-            if(client.getClientServerId() > 0) {
+            /*if(client.getClientServerId() > 0) {
             	editor.putLong("prefClientServerID", client.getClientServerId() );
-            }
+            }*/
+            editor.putLong("prefClientServerID", client.getClientServerId() );
             editor.commit();
             startActivity(new Intent(ClientListActivity.this, ClientInfoActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-//            ClientListActivity.this.finish();
+            ClientListActivity.this.finish();
             }
         });
     }
@@ -98,9 +102,9 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
         super.onStart();
         db = new DbHelper(this);
         //update all old client status to 0.
-    	db.updateClientCreatedStatus();
+    	//db.updateClientCreatedStatus();
         
-    	clients = db.getAllClients(prefs.getString("prefUsername", ""));
+    	clients = db.getAllClients(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
         DatabaseManager.getInstance().closeDatabase();
         Log.i("info", Integer.toString(clients.size()) );
         if (clients.size() < 1) {
@@ -132,13 +136,13 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        UIUtils.showUserData(menu, this);
+        UIUtils.showUserData(menu, this, null);
         return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getSupportMenuInflater().inflate(R.menu.activity_main, menu);
+    	getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
     }
 
@@ -180,7 +184,7 @@ public class ClientListActivity extends AppActivity implements SharedPreferences
             public void onClick(DialogInterface dialog, int which) {
                 // wipe user prefs
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("prefUsername", "");
+                editor.putString(PrefsActivity.PREF_USER_NAME, "");
                 editor.putString("prefApiKey", "");
                 editor.putInt("prefBadges", 0);
                 editor.putInt("prefPoints", 0);

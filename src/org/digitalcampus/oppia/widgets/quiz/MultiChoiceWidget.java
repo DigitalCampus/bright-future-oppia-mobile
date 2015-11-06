@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import java.util.Locale;
 
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.mobile.quiz.model.Response;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -56,12 +57,12 @@ public class MultiChoiceWidget extends QuestionWidget{
     	for (Response r : responses){
     		RadioButton rb = new RadioButton(ctx);
     		rb.setId(id);
-			rb.setText(r.getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())));
+			rb.setText(r.getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())));
 			responsesRG.addView(rb);
 			Iterator<String> itr = currentAnswer.iterator();
 			while(itr.hasNext()) {
 				String answer = itr.next(); 
-				if (r.getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())) == answer){
+				if (r.getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())) == answer){
 					rb.setChecked(true);
 				}
 			}
@@ -78,7 +79,7 @@ public class MultiChoiceWidget extends QuestionWidget{
     	int idx = responsesRG.indexOfChild(rb);
     	if (idx >= 0){
     		List<String> response = new ArrayList<String>();
-			response.add(responses.get(idx).getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())));
+			response.add(responses.get(idx).getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())));
     		return response;
     	}
     	return null;

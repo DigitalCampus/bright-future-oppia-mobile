@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
-import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.adapter.ActivityPagerAdapter;
 import org.digitalcampus.oppia.adapter.SectionListAdapter;
 import org.digitalcampus.oppia.application.DatabaseManager;
@@ -38,29 +37,30 @@ import org.digitalcampus.oppia.widgets.FeedbackWidget;
 import org.digitalcampus.oppia.widgets.PageWidget;
 import org.digitalcampus.oppia.widgets.QuizWidget;
 import org.digitalcampus.oppia.widgets.ResourceWidget;
+import org.digitalcampus.oppia.widgets.UrlWidget;
 import org.digitalcampus.oppia.widgets.WidgetFactory;
+import org.bright.future.oppia.mobile.learning.R;
+
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.speech.tts.UtteranceProgressListener;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.ActionBar.Tab;
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
 
-public class CourseActivity extends SherlockFragmentActivity implements ActionBar.TabListener, OnInitListener {
+public class CourseActivity extends FragmentActivity implements ActionBar.TabListener, OnInitListener {
 
 	public static final String TAG = CourseActivity.class.getSimpleName();
 	public static final String BASELINE_TAG = "BASELINE";
@@ -78,33 +78,28 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 
 	private ViewPager viewPager;
 	private ActivityPagerAdapter apAdapter;
-	
-	@SuppressWarnings("unchecked")
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.activity_course);
-		actionBar = getSupportActionBar();
+		actionBar = getActionBar();
 		prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		viewPager = (ViewPager) findViewById(R.id.activity_widget_pager);
 
 		Bundle bundle = this.getIntent().getExtras();
 		if (bundle != null) {
+			section = (Section) bundle.getSerializable(Section.TAG);
 			course = (Course) bundle.getSerializable(Course.TAG);
-			if (bundle.containsKey(Activity.TAG)){
-				activities = (ArrayList<Activity>) bundle.getSerializable(Activity.TAG);
-			} else {
-				section = (Section) bundle.getSerializable(Section.TAG);
-				activities = section.getActivities();
-			}
+			activities = section.getActivities();
 			currentActivityNo = (Integer) bundle.getSerializable(SectionListAdapter.TAG_PLACEHOLDER);
-			if (bundle.containsKey(CourseActivity.BASELINE_TAG)) {
+			if (bundle.getSerializable(CourseActivity.BASELINE_TAG) != null) {
 				this.isBaseline = (Boolean) bundle.getBoolean(CourseActivity.BASELINE_TAG);
 			}
 			// set image
 			BitmapDrawable bm = ImageUtils
-					.LoadBMPsdcard(course.getImageFile(), this.getResources(), R.drawable.bright_future_logo);
+					.LoadBMPsdcard(course.getImageFileFromRoot(), this.getResources(), MobileLearning.APP_LOGO);
 			actionBar.setIcon(bm);
 
 			actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -112,58 +107,13 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 			actionBar.setHomeButtonEnabled(true);
 			
 		}
-		
+        loadActivities();
 	}
 	
 	@Override
 	public void onStart() {
 		super.onStart();
-		String actionBarTitle;
-		if (section != null){
-			actionBarTitle = section.getTitle(prefs.getString("prefLanguage", Locale
-					.getDefault().getLanguage()));
-		} else {
-			actionBarTitle = course.getTitle(prefs.getString("prefLanguage", Locale
-					.getDefault().getLanguage()));
-		}
-		if (actionBarTitle != null) {
-			setTitle(actionBarTitle);
-		} else if (isBaseline) {
-			setTitle(getString(R.string.title_baseline));
-		}	
-		actionBar.removeAllTabs();
-		List<Fragment> fragments = new ArrayList<Fragment>();
-		for (int i = 0; i < activities.size(); i++) {
-			Fragment f = null;
-			if (activities.get(i).getActType().equalsIgnoreCase("page")){
-				f = PageWidget.newInstance(activities.get(i), course, isBaseline);
-				fragments.add(f);
-			} else if (activities.get(i).getActType().equalsIgnoreCase("quiz")) {
-				f = QuizWidget.newInstance(activities.get(i), course, isBaseline);
-				fragments.add(f);
-			} else if (activities.get(i).getActType().equalsIgnoreCase("resource")) {
-				f = ResourceWidget.newInstance(activities.get(i), course, isBaseline);
-				fragments.add(f);
-			} else if  (activities.get(i).getActType().equalsIgnoreCase("feedback")){
-				f = FeedbackWidget.newInstance(activities.get(i), course, isBaseline);
-				fragments.add(f);
-			}
-		}
-		
-		apAdapter = new ActivityPagerAdapter(getSupportFragmentManager(), fragments);
-		viewPager.setAdapter(apAdapter);
 
-		for (int i = 0; i < activities.size(); i++) {
-			String title = activities.get(i).getTitle(
-					prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
-			boolean tabSelected = false;
-			if (i == currentActivityNo) {
-				tabSelected = true;
-			}
-			actionBar.addTab(actionBar.newTab().setText(title).setTabListener(this), tabSelected);
-
-		}
-		viewPager.setCurrentItem(currentActivityNo);
 		viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
 			public void onPageScrollStateChanged(int arg0) {
@@ -199,9 +149,17 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 		if (myTTS != null) {
 			myTTS.shutdown();
 			myTTS = null;
-		}	
-		((WidgetFactory) apAdapter.getItem(currentActivityNo)).saveTracker();
-	}	
+		}
+        WidgetFactory currentWidget = (WidgetFactory) apAdapter.getItem(currentActivityNo);
+        currentWidget.pauseTimeTracking();
+        currentWidget.saveTracker();
+	}
+
+    public void onResume(){
+        super.onResume();
+        WidgetFactory currentWidget = (WidgetFactory) apAdapter.getItem(currentActivityNo);
+        currentWidget.resumeTimeTracking();
+    }
 	
 	@Override
 	protected void onDestroy() {
@@ -223,12 +181,12 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getSupportMenuInflater().inflate(R.menu.activity_course, menu);
+		getMenuInflater().inflate(R.menu.activity_course, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(com.actionbarsherlock.view.Menu menu) {
+	public boolean onPrepareOptionsMenu(Menu menu) {
 		MenuItem item = (MenuItem) menu.findItem(R.id.menu_tts);
 		if (ttsRunning) {
 			item.setTitle(R.string.menu_stop_read_aloud);
@@ -241,41 +199,28 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
-		switch (item.getItemId()) {
-		case R.id.menu_language:
+		Bundle tb = new Bundle();
+		Intent i;
+		int itemId = item.getItemId();
+		if (itemId == R.id.menu_language) {
 			createLanguageDialog();
 			return true;
-		case R.id.menu_share:
-			String videoName = activities.get(actionBar.getTabCount()-1).getMedia().get(0).getFilename();
-			try{
-				if(videoName != null) {
-				Intent in = new Intent(Intent.ACTION_SEND);
-				Log.d(TAG, "Path to video file: "+Uri.parse("file://"+MobileLearning.MEDIA_PATH+videoName));
-				in.setType("video/*");
-			    in.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+MobileLearning.MEDIA_PATH+videoName));
-		        in.putExtra(Intent.EXTRA_TEXT,
-		                "" + getResources().getString(R.string.app_name));
-		        startActivity(Intent.createChooser(in,getResources().getString(R.string.app_name)));
-				}
-				else {
-					UIUtils.showAlert(this, R.string.error, R.string.error_media_not_found);
-				}
-			}
-			catch(Exception e) {
-				
-			}
-			return true;
-		case R.id.menu_help:
-			Bundle tb = new Bundle();
-			Intent i = new Intent(this, AboutActivity.class);
+		} else if (itemId == R.id.menu_help) {
+			i = new Intent(this, AboutActivity.class);
 			tb.putSerializable(AboutActivity.TAB_ACTIVE, AboutActivity.TAB_HELP);
 			i.putExtras(tb);
 			startActivity(i);
-			return true;			
-		case android.R.id.home:
+			return true;
+		} else if (itemId == android.R.id.home) {
 			this.finish();
 			return true;
-		case R.id.menu_tts:
+		} else if (itemId == R.id.menu_scorecard) {
+			i = new Intent(this, ScorecardActivity.class);
+			tb.putSerializable(Course.TAG, course);
+			i.putExtras(tb);
+			startActivity(i);
+			return true;
+		} else if (itemId == R.id.menu_tts) {
 			if (myTTS == null && !ttsRunning) {
 				// check for TTS data
 				Intent checkTTSIntent = new Intent();
@@ -289,16 +234,71 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 			}
 			supportInvalidateOptionsMenu();
 			return true;
-		default:
+		} else {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
+    private void loadActivities(){
+        String currentLang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
+        String actionBarTitle = section.getTitle(currentLang);
+        if (actionBarTitle != null) {
+            setTitle(actionBarTitle);
+        } else if (isBaseline) {
+            setTitle(getString(R.string.title_baseline));
+        }
+        actionBar.removeAllTabs();
+        List<Fragment> fragments = new ArrayList<Fragment>();
+
+        for (int i = 0; i < activities.size(); i++) {
+            Activity activity = activities.get(i);
+            //Fragment creation
+            if (activity.getActType().equalsIgnoreCase("page")){
+                fragments.add( PageWidget.newInstance(activity, course, isBaseline) );
+            } else if (activity.getActType().equalsIgnoreCase("quiz")) {
+                QuizWidget newQuiz = QuizWidget.newInstance(activity, course, isBaseline);
+                if (apAdapter != null){
+                    //If there was a previous quizWidget, we apply its current config to the new one
+                    QuizWidget previousQuiz = (QuizWidget) apAdapter.getItem(i);
+                    newQuiz.setWidgetConfig(previousQuiz.getWidgetConfig());
+                }
+                fragments.add(newQuiz);
+            } else if (activity.getActType().equalsIgnoreCase("resource")) {
+                fragments.add( ResourceWidget.newInstance(activity, course, isBaseline) );
+            } else if  (activity.getActType().equalsIgnoreCase("feedback")){
+                FeedbackWidget newFeedback = FeedbackWidget.newInstance(activity, course, isBaseline);
+                if (apAdapter != null){
+                    //If there was a previous feedbackWidget, we apply its current config to the new one
+                    FeedbackWidget previousWidget = (FeedbackWidget) apAdapter.getItem(i);
+                    newFeedback.setWidgetConfig(previousWidget.getWidgetConfig());
+                }
+                fragments.add(newFeedback);
+            }  else if (activities.get(i).getActType().equalsIgnoreCase("url")) {
+                UrlWidget f = UrlWidget.newInstance(activities.get(i), course, isBaseline);
+                fragments.add(f);
+            } 
+        }
+
+        apAdapter = new ActivityPagerAdapter(getSupportFragmentManager(), fragments);
+        viewPager.setAdapter(apAdapter);
+
+        //Tab creation
+        for (int i=0; i<activities.size(); i++){
+            Activity activity = activities.get(i);
+            String title = activity.getTitle(currentLang);
+            actionBar.addTab(
+                    actionBar.newTab().setText(title).setTabListener(this),
+                    (currentActivityNo == i) //Set the current active activity as active tab
+            );
+        }
+        viewPager.setCurrentItem(currentActivityNo);
+    }
+
 	private void createLanguageDialog() {
 		UIUtils ui = new UIUtils();
 		ui.createLanguageDialog(this, course.getLangs(), prefs, new Callable<Boolean>() {
 			public Boolean call() throws Exception {
-				CourseActivity.this.onStart();
+				CourseActivity.this.loadActivities();
 				return true;
 			}
 		});
@@ -308,10 +308,13 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 	}
 
 	public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		viewPager.setCurrentItem(tab.getPosition());
-		this.currentActivityNo = tab.getPosition();
+        int tabSelected = tab.getPosition();
+		viewPager.setCurrentItem(tabSelected);
+		this.currentActivityNo = tabSelected;
 		this.stopReading();
-		((WidgetFactory) apAdapter.getItem(currentActivityNo)).setStartTime(System.currentTimeMillis()/1000);
+        //apAdapter.getItem(tabSelected).onResume();
+        WidgetFactory currentWidget = (WidgetFactory) apAdapter.getItem(currentActivityNo);
+        currentWidget.resetTimeTracking();
 	}
 
 	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
@@ -355,7 +358,6 @@ public class CourseActivity extends SherlockFragmentActivity implements ActionBa
 			if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 				// the user has the necessary data - create the TTS
 				myTTS = new TextToSpeech(this, this);
-				
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data);

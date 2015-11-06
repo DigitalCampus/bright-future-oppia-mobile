@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
@@ -40,12 +41,12 @@ import org.digitalcampus.oppia.utils.MetaDataUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.splunk.mint.Mint;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-
-import com.bugsense.trace.BugSenseHandler;
 
 public class RegisterTask extends AsyncTask<Payload, Object, Payload> {
 
@@ -67,7 +68,7 @@ public class RegisterTask extends AsyncTask<Payload, Object, Payload> {
 		User u = (User) payload.getData().get(0);
 		HTTPConnectionUtils client = new HTTPConnectionUtils(ctx);
 
-		String url = prefs.getString("prefServer", ctx.getString(R.string.prefServerDefault))
+		String url = prefs.getString(PrefsActivity.PREF_SERVER, ctx.getString(R.string.prefServerDefault))
 				+ MobileLearning.REGISTER_PATH;
 		
 		HttpPost httpPost = new HttpPost(url);
@@ -84,7 +85,7 @@ public class RegisterTask extends AsyncTask<Payload, Object, Payload> {
             json.put("lastname",u.getLastname());
             json.put("jobtitle",u.getJobTitle());
             json.put("organisation",u.getOrganisation());
-
+            json.put("phoneno",u.getPhoneNo());
             StringEntity se = new StringEntity(json.toString(),"utf8");
             //Log.d("data",se.toString());
             se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
@@ -134,8 +135,6 @@ public class RegisterTask extends AsyncTask<Payload, Object, Payload> {
 					}
 					u.setFirstname(jsonResp.getString("first_name"));
 					u.setLastname(jsonResp.getString("last_name"));
-					u.setPassword(u.getPassword());
-					u.setPasswordEncrypted();
 					
 					// add or update user in db
 					DbHelper db = new DbHelper(ctx);
@@ -160,11 +159,8 @@ public class RegisterTask extends AsyncTask<Payload, Object, Payload> {
 			payload.setResult(false);
 			payload.setResultResponse(ctx.getString(R.string.error_connection));
 		} catch (JSONException e) {
-			if(!MobileLearning.DEVELOPER_MODE){
-				BugSenseHandler.sendException(e);
-			} else {
-				e.printStackTrace();
-			}
+			Mint.logException(e);
+			e.printStackTrace();
 			payload.setResult(false);
 			payload.setResultResponse(ctx.getString(R.string.error_processing_response));
 		} 

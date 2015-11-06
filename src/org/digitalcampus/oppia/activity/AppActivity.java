@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,16 @@
 
 package org.digitalcampus.oppia.activity;
 
+import android.support.v4.app.FragmentActivity;
+import android.view.MenuItem;
+
 import java.util.ArrayList;
 
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.application.ScheduleReminders;
 
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.view.MenuItem;
 
-
-public class AppActivity extends SherlockActivity {
+public class AppActivity extends FragmentActivity {
 	
 	public static final String TAG = AppActivity.class.getSimpleName();
 	

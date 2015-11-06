@@ -1,9 +1,22 @@
 package org.digitalcampus.oppia.activity;
 
-import java.util.ArrayList;
-import java.util.Map;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.Uri;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
@@ -15,22 +28,10 @@ import org.digitalcampus.oppia.service.TrackerService;
 import org.digitalcampus.oppia.task.ClientDataSyncTask;
 import org.digitalcampus.oppia.task.Payload;
 import org.digitalcampus.oppia.utils.UIUtils;
+import org.bright.future.oppia.mobile.learning.R;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import java.util.ArrayList;
+import java.util.Map;
 
 public class ClientInfoActivity extends AppActivity implements ClientDataSyncListener {
     public static final String TAG = ClientInfoActivity.class.getSimpleName();
@@ -39,7 +40,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     private Context ctx;
     private SharedPreferences prefs;
     private AlertDialog aDialog;
-    //private ArrayList<Course> courses = new ArrayList<Course>() ;
+    private ArrayList<Course> courses = new ArrayList<Course>() ;
     private TextView clientNameTextView;
     private TextView clientMobileTextView;
     private TextView clientGenderTextView;
@@ -54,6 +55,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     private Button closeCase, deleteClient;
     private ProgressDialog dialog;
     private boolean isButtonDeleteClient;
+    private boolean isBackPressed;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -93,101 +95,79 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         closeCase.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new AlertDialog.Builder(ctx)
-			    .setTitle("Close Client Case")
-			    .setMessage("Are you sure you want to close this client?")
-			    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int which) {
-			        	//check for client sync status.
-			            // synced, continue with close case
-			        	if(client.getClientServerId() > 0) {
-				        	isButtonDeleteClient = false;
-				        	closeCase.setEnabled(false);
-				        	db = new DbHelper(ctx);
-							client.setClientCloseCase(1);
-							db.updateClientAfterSync(client);
-			                MobileLearning app = (MobileLearning) ctx.getApplicationContext();
-			                if (app.omSubmitClientSyncTask == null) {
-			                    Log.d(TAG,"Syncing and updating client task");
-			                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
-			                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
-			                    app.omSubmitClientSyncTask.execute();
-			                }
-			                else {
-			                	// previous data sync is not completed. try after some time.
-			                	closeCase.setEnabled(true);
-			                	UIUtils.showAlert(ctx, "Can't Close", "Please try again");
-			                }
+				//check network
+				if(isNetworkAvailable(ctx)){
+				
+					new AlertDialog.Builder(ctx)
+				    .setTitle("Close Client Case")
+				    .setMessage("Are you sure you want to close this client?")
+				    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int which) {
+				        	//check for client sync status.
+				            // synced, continue with close case
+				        	if(client.getClientServerId() > 0) {
+					        	isButtonDeleteClient = false;
+					        	closeCase.setEnabled(false);
+					        	db = new DbHelper(ctx);
+								client.setClientCloseCase(1);
+								db.updateClientAfterSync(client);
+								DatabaseManager.getInstance().closeDatabase();
+				                MobileLearning app = (MobileLearning) ctx.getApplicationContext();
+				                if (app.omSubmitClientSyncTask == null) {
+				                    Log.d(TAG,"Syncing and updating client task");
+				                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
+				                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
+				                    app.omSubmitClientSyncTask.execute();
+				                }
+				                else {
+				                	// previous data sync is not completed. try after some time.
+				                	closeCase.setEnabled(true);
+				                	UIUtils.showAlert(ctx, "Can't Close", "Please try again");
+				                }
+					        }
+				        	else {
+				        		//client is not synced, can't close. Please try after some time. 
+				        		UIUtils.showAlert(ctx, "Can't close", "Please try after some time");
+				        	}
 				        }
-			        	else {
-			        		//client is not synced, can't close. Please try after some time. 
-			        		UIUtils.showAlert(ctx, "Can't close", "Please try after some time");
-			        	}
-			        }
-			     })
-			    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int which) { 
-			            // do nothing
-			        }
-			     })
-			    .setIcon(android.R.drawable.ic_dialog_alert)
-			    .show();
+				     })
+				    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+				        public void onClick(DialogInterface dialog, int which) { 
+				            // do nothing
+				        }
+				     })
+				    .setIcon(android.R.drawable.ic_dialog_alert)
+				    .show();
+				}
+				else {
+					UIUtils.showAlert(ctx, R.string.error, R.string.error_connection);
+				}
 			}
 		});
         
         deleteClient.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new AlertDialog.Builder(ctx)
-			    .setTitle("Delete Client Record")
-			    .setMessage("Are you sure you want to delete this client?")
-			    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int which) {
-			        	//check for client sync status.
-			            // synced, delete request to server. not synced delete it from local.
-			        	if(client.getClientServerId() > 0) {
-				        	isButtonDeleteClient = true;
-				        	deleteClient.setEnabled(false);
-				        	db = new DbHelper(ctx);
-				        	client.setClientDeleteRecord(1);
-							db.updateClientAfterSync(client);
-							MobileLearning app = (MobileLearning) ctx.getApplicationContext();
-							
-			                if (app.omSubmitClientSyncTask == null) {
-			                    Log.d(TAG,"Syncing and updating client task");
-			                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
-			                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
-			                    app.omSubmitClientSyncTask.execute();
-			                }
-			                else {
-			                	// previous data sync is not completed. try after some time.
-			                	deleteClient.setEnabled(true);
-			                	UIUtils.showAlert(ctx, "Can't delete", "Please try again");
-			                }
-			        	}
-			        	else {
-			        		// not synced, delete it from local db.
-			        		clientDataSyncProgress();
-			        		db.deleteUnregisteredClients(client.getClientId());
-			        		clientDataSyncComplete(null);
-			        	}
-			        }
-			     })
-			    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-			        public void onClick(DialogInterface dialog, int which) { 
-			            // do nothing
-			        }
-			     })
-			    .setIcon(android.R.drawable.ic_dialog_alert)
-			    .show();
-				
+				//check network
+				if(isNetworkAvailable(ctx)){
+					deleteClient();
+				}
+				else {
+					if(client.getClientServerId() <= 0) {
+						// not synced, delete it from local db.
+						deleteClient();
+					}
+					else {
+						UIUtils.showAlert(ctx, R.string.error, R.string.error_connection);
+					}
+				}
 			}
 		});
-
+        
         makeVisitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Course c = (Course) db.getCourse(db.getCourseID("mcounseling"), db.getUserId(prefs.getString("prefUsername", "")));
+                Course c = (Course) db.getCourse(db.getCourseID("mcounseling"), db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, "")));
                 Intent i = new Intent(ClientInfoActivity.this, CourseIndexActivity.class);
                 Bundle tb = new Bundle();
                 tb.putSerializable(Course.TAG, c);
@@ -197,7 +177,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
                 db = new DbHelper(ctx);
                 ClientSession clientSession = new ClientSession();
 
-                clientSession.setHealthWorker(prefs.getString("prefUsername", ""));
+                clientSession.setHealthWorker(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
                 clientSession.setStartDateTime(System.currentTimeMillis()/1000);
                 if (client.getClientServerId() != 0) {
                     clientSession.setClientId(client.getClientServerId());
@@ -212,7 +192,7 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
                 editor.putLong("prefClientSessionId", clientSession.getId());
                 editor.putInt("prefClientSessionActive", 1);// client counselling session started
                 editor.commit();
-
+				DatabaseManager.getInstance().closeDatabase();
                 startActivity(i);
 //                ClientInfoActivity.this.finish();
             }
@@ -249,6 +229,52 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         PreferenceManager.setDefaultValues(this, R.xml.prefs, false);
     }
 
+    private void deleteClient() {
+    	new AlertDialog.Builder(ctx)
+	    .setTitle("Delete Client Record")
+	    .setMessage("Are you sure you want to delete this client?")
+	    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int which) {
+	        	//check for client sync status.
+	            // synced, delete request to server. not synced delete it from local.
+	        	db = new DbHelper(ctx);
+				if(client.getClientServerId() > 0) {
+		        	isButtonDeleteClient = true;
+		        	deleteClient.setEnabled(false);
+		        	
+		        	client.setClientDeleteRecord(1);
+					db.updateClientAfterSync(client);
+					MobileLearning app = (MobileLearning) ctx.getApplicationContext();
+					
+	                if (app.omSubmitClientSyncTask == null) {
+	                    Log.d(TAG,"Syncing and updating client task");
+	                    app.omSubmitClientSyncTask = new ClientDataSyncTask(ctx);
+	                    app.omSubmitClientSyncTask.setClientDataSyncListener((ClientDataSyncListener) ctx);
+	                    app.omSubmitClientSyncTask.execute();
+	                }
+	                else {
+	                	// previous data sync is not completed. try after some time.
+	                	deleteClient.setEnabled(true);
+	                	UIUtils.showAlert(ctx, "Can't delete", "Please try again");
+	                }
+	        	}
+	        	else {
+	        		// not synced, delete it from local db.
+	        		clientDataSyncProgress();
+	        		db.deleteUnregisteredClients(client.getClientId());
+	        		clientDataSyncComplete(null);
+	        	}
+				DatabaseManager.getInstance().closeDatabase();
+	        }
+	     })
+	    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int which) { 
+	            // do nothing
+	        }
+	     })
+	    .setIcon(android.R.drawable.ic_dialog_alert)
+	    .show();
+    }
     @Override
     public void onStart() {
         super.onStart();
@@ -300,20 +326,23 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
             clientChildAgeRelativeLayout.setVisibility(View.GONE);
             clientChildAgeTextView.setText("0");
         }
-        if (client.getMethodName() != null && client.getMethodName().length() != 0) {
-            methodNameRelativeLayout.setVisibility(View.VISIBLE);
-            clientMethodNameTextView.setText(client.getMethodName());
-        } else {
-            methodNameRelativeLayout.setVisibility(View.GONE);
-            clientMethodNameTextView.setText("");
-        }
+       
         if (client.getAdaptedMethodName() != null && client.getAdaptedMethodName().length() != 0) {
         	AdaptedethodNameRelativeLayout.setVisibility(View.VISIBLE);
         	adaptedMethodNameTextView.setText(client.getAdaptedMethodName());
         } else {
         	AdaptedethodNameRelativeLayout.setVisibility(View.GONE);
         	adaptedMethodNameTextView.setText("");
+        	
+        	 if (client.getMethodName() != null && client.getMethodName().length() != 0) {
+                 methodNameRelativeLayout.setVisibility(View.VISIBLE);
+                 clientMethodNameTextView.setText(client.getMethodName());
+             } else {
+                 methodNameRelativeLayout.setVisibility(View.GONE);
+                 clientMethodNameTextView.setText("");
+             }
         }
+		DatabaseManager.getInstance().closeDatabase();
     }
 
     @Override
@@ -329,8 +358,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
     public void onResume() {
         super.onResume();
         db = new DbHelper(ctx);
-        ArrayList<Client> clients3 = db.getAllClients(prefs.getString("prefUsername", ""));
-        ArrayList<ClientSession> clientSessions2 = db.getAllClientSessions(prefs.getString("prefUsername", ""));
+        //ArrayList<Client> clients3 = db.getAllClients(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+        //ArrayList<ClientSession> clientSessions2 = db.getAllClientSessions(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
 
         DatabaseManager.getInstance().closeDatabase();
 
@@ -363,6 +392,13 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
         editor.commit();
     }
 
+    @Override
+    public void onBackPressed() {
+        isBackPressed = true;
+    	clientDataSyncProgress();
+    	clientDataSyncComplete(null);
+    }
+    
 	@Override
 	public void clientDataSyncComplete(Payload response) {
 		if(dialog != null){
@@ -384,12 +420,17 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 		String header;
 		if(isButtonDeleteClient) {
 			header="Deleting Client";
-			//db.deleteUnregisteredClients(client.getClientId());
 		}
 		else {
 			header="Closing Case";
 		}
+		if(isBackPressed) header = "Loading";
+		
 		dialog = ProgressDialog.show(ctx, header,
 			    "Please Wait...", true);
+	}
+	public boolean isNetworkAvailable(final Context context) {
+	    final ConnectivityManager connectivityManager = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE));
+	    return connectivityManager.getActiveNetworkInfo() != null && connectivityManager.getActiveNetworkInfo().isConnected();
 	}
 }

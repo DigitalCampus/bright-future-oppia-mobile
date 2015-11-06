@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,36 +22,53 @@ import java.util.Locale;
 import java.util.concurrent.Callable;
 
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
+import org.digitalcampus.oppia.activity.ScorecardActivity;
+import org.digitalcampus.oppia.application.DatabaseManager;
+import org.digitalcampus.oppia.application.DbHelper;
+import org.digitalcampus.oppia.exception.UserNotFoundException;
+import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.model.Lang;
+import org.digitalcampus.oppia.model.User;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.actionbarsherlock.view.Menu;
-import com.actionbarsherlock.view.MenuItem;
-
 public class UIUtils {
 
 	public final static String TAG = UIUtils.class.getSimpleName();
-	private ArrayList<String> langStringList;
-	private ArrayList<Lang> langList;
-	private SharedPreferences prefs;
-
 	
 	 /**
      * Displays the users points and badges scores in the app header
      * @param act
      */
-	public static void showUserData(Menu menu, Context ctx) {
+	public static void showUserData(Menu menu, final Context ctx, final Course courseInContext) {
 		MenuItem pointsItem = menu.findItem(R.id.points);
-
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+		
+		DbHelper db = new DbHelper(ctx);
+		User u;
+		try {
+			u = db.getUser(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+			Log.d(TAG,"username: " + u.getUsername());
+			Log.d(TAG,"points: " + u.getPoints());
+		} catch (UserNotFoundException e) {
+			return;
+		}
+		DatabaseManager.getInstance().closeDatabase();
+		
 		if(pointsItem == null){
 			return;
 		}
@@ -63,19 +80,47 @@ public class UIUtils {
 			return;
 		}
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(ctx);
-		boolean scoringEnabled = prefs.getBoolean("prefScoringEnabled", true);
+		
+		boolean scoringEnabled = prefs.getBoolean(PrefsActivity.PREF_SCORING_ENABLED, true);
 		if (scoringEnabled) {
 			points.setVisibility(View.VISIBLE);
-			points.setText(String.valueOf(prefs.getInt("prefPoints", 0)));
+			points.setText(String.valueOf(u.getPoints()));
+            points.setClickable(true);
+            points.setOnClickListener(new View.OnClickListener() {
+                //@Override
+                public void onClick(View view) {
+                    Intent i = new Intent(ctx, ScorecardActivity.class);
+                    Bundle tb = new Bundle();
+                    tb.putString(ScorecardActivity.TAB_TARGET, ScorecardActivity.TAB_TARGET_POINTS);
+                    if (courseInContext != null){
+                        tb.putSerializable(Course.TAG, courseInContext);
+                    }
+                    i.putExtras(tb);
+                    ctx.startActivity(i);
+                }
+            });
 		} else {
 			points.setVisibility(View.GONE);
 		}
 		
-		boolean badgingEnabled = prefs.getBoolean("prefBadgingEnabled", true);
+		boolean badgingEnabled = prefs.getBoolean(PrefsActivity.PREF_BADGING_ENABLED, true);
 		if (badgingEnabled) {
 			badges.setVisibility(View.VISIBLE);
-			badges.setText(String.valueOf(prefs.getInt("prefBadges", 0)));
+			badges.setText(String.valueOf(u.getBadges()));
+            badges.setClickable(true);
+            badges.setOnClickListener(new View.OnClickListener() {
+                //@Override
+                public void onClick(View view) {
+                    Intent i = new Intent(ctx, ScorecardActivity.class);
+                    Bundle tb = new Bundle();
+                    tb.putString(ScorecardActivity.TAB_TARGET, ScorecardActivity.TAB_TARGET_BADGES);
+                    if (courseInContext != null){
+                        tb.putSerializable(Course.TAG, courseInContext);
+                    }
+                    i.putExtras(tb);
+                    ctx.startActivity(i);
+                }
+            });
 		} else {
 			badges.setVisibility(View.GONE);
 		}
@@ -202,32 +247,32 @@ public class UIUtils {
 	 * @param prefs
 	 * @param funct
 	 */
-	public void createLanguageDialog(Context ctx, ArrayList<Lang> langs, SharedPreferences prefs, final Callable<Boolean> funct) {
-		this.langStringList = new ArrayList<String>();
-		this.langList = new ArrayList<Lang>();
-		this.prefs = prefs;
+	public static void createLanguageDialog(Context ctx, ArrayList<Lang> langs, final SharedPreferences prefs, final Callable<Boolean> funct) {
+        ArrayList<String> langStringList = new ArrayList<String>();
+        final ArrayList<Lang> languagesList = new ArrayList<Lang>();
 		
 		// make sure there aren't any duplicates
-		for(Lang l: langs){
+		for(Lang lang: langs){
 			boolean found = false;
-			for(Lang ln: langList){
-				if(ln.getLang().equals(l.getLang())){
+			for(Lang ln: languagesList){
+				if(ln.getLang().equals(lang.getLang())){
 					found = true;
+                    break;
 				}
 			}
-			if(!found){
-				langList.add(l);
-			}
+			if(!found){ languagesList.add(lang); }
 		}
 		
-		int selected = -1;
+		int prefLangPosition = -1;
 		int i = 0;
-		for(Lang l: langList){
-			Locale loc = new Locale(l.getLang());
-			String langDisp = loc.getDisplayLanguage(loc);
+
+        String prefLanguage = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
+		for(Lang lang: languagesList){
+			Locale locale = new Locale(lang.getLang());
+			String langDisp = locale.getDisplayLanguage(locale);
 			langStringList.add(langDisp);
-			if (l.getLang().equals(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()))) {
-				selected = i;
+			if (lang.getLang().equals(prefLanguage)) {
+                prefLangPosition = i;
 			}
 			i++;
 		}
@@ -235,13 +280,12 @@ public class UIUtils {
 		// only show if at least one language
 		if (i > 0) {
 			ArrayAdapter<String> arr = new ArrayAdapter<String>(ctx, android.R.layout.select_dialog_singlechoice,langStringList);
-
 			AlertDialog mAlertDialog = new AlertDialog.Builder(ctx)
-					.setSingleChoiceItems(arr, selected, new DialogInterface.OnClickListener() {
+					.setSingleChoiceItems(arr, prefLangPosition, new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int whichButton) {
-							String newLang = langList.get(whichButton).getLang();
-							Editor editor = UIUtils.this.prefs.edit();
-							editor.putString("prefLanguage", newLang);
+							String newLang = languagesList.get(whichButton).getLang();
+							Editor editor = prefs.edit();
+							editor.putString(PrefsActivity.PREF_LANGUAGE, newLang);
 							editor.commit();
 							dialog.dismiss();
 							try {

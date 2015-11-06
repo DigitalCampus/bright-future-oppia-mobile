@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.listener.SubmitListener;
 import org.digitalcampus.oppia.model.User;
@@ -37,13 +38,16 @@ import org.digitalcampus.oppia.utils.HTTPConnectionUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+
+
+import com.splunk.mint.Mint;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.bugsense.trace.BugSenseHandler;
 
 public class ResetTask extends AsyncTask<Payload, Object, Payload> {
 
@@ -65,7 +69,7 @@ public class ResetTask extends AsyncTask<Payload, Object, Payload> {
 		User u = (User) payload.getData().get(0);
 		HTTPConnectionUtils client = new HTTPConnectionUtils(ctx);
 
-		String url = prefs.getString("prefServer", ctx.getString(R.string.prefServerDefault))
+		String url = prefs.getString(PrefsActivity.PREF_SERVER, ctx.getString(R.string.prefServerDefault))
 				+ MobileLearning.RESET_PATH;
 		Log.d(TAG,url);
 		HttpPost httpPost = new HttpPost(url);
@@ -116,11 +120,8 @@ public class ResetTask extends AsyncTask<Payload, Object, Payload> {
 			payload.setResult(false);
 			payload.setResultResponse(ctx.getString(R.string.error_connection));
 		} catch (JSONException e) {
-			if(!MobileLearning.DEVELOPER_MODE){
-				BugSenseHandler.sendException(e);
-			} else {
-				e.printStackTrace();
-			}
+			Mint.logException(e);
+			e.printStackTrace();
 			payload.setResult(false);
 			payload.setResultResponse(ctx.getString(R.string.error_processing_response));
 		}

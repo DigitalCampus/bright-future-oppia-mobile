@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,9 +17,17 @@
 
 package org.digitalcampus.oppia.activity;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.widget.TextView;
 
-import java.io.File;
-import java.util.ArrayList;
+import com.splunk.mint.Mint;
 
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.application.MobileLearning;
@@ -31,19 +39,10 @@ import org.digitalcampus.oppia.task.InstallDownloadedCoursesTask;
 import org.digitalcampus.oppia.task.Payload;
 import org.digitalcampus.oppia.task.PostInstallTask;
 import org.digitalcampus.oppia.task.UpgradeManagerTask;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.TextView;
-
-import com.bugsense.trace.BugSenseHandler;
+import java.io.File;
+import java.util.ArrayList;
 
 public class StartUpActivity extends Activity implements UpgradeListener, PostInstallListener, InstallCourseListener{
 
@@ -54,33 +53,22 @@ public class StartUpActivity extends Activity implements UpgradeListener, PostIn
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        BugSenseHandler.initAndStartSession(this, MobileLearning.BUGSENSE_API_KEY);
+        Mint.disableNetworkMonitoring();
+        Mint.initAndStartSession(this, MobileLearning.MINT_API_KEY);
+        
         setContentView(R.layout.start_up);
-        Log.d("111", MobileLearning.COURSES_PATH);
+        //Log.d("111", MobileLearning.COURSES_PATH);
 
         tvProgress = (TextView) this.findViewById(R.id.start_up_progress);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Mint.setUserIdentifier(prefs.getString(PrefsActivity.PREF_USER_NAME, "anon"));
         
-        // set up local dirs
- 		if(!MobileLearning.createDirs()){
- 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
- 			builder.setCancelable(false);
- 			builder.setTitle(R.string.error);
- 			builder.setMessage(R.string.error_sdcard);
- 			builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
- 				public void onClick(DialogInterface dialog, int which) {
- 					StartUpActivity.this.finish();
- 				}
- 			});
- 			builder.show();
- 			return;
- 		}
- 		
- 		UpgradeManagerTask umt = new UpgradeManagerTask(this);
+        UpgradeManagerTask umt = new UpgradeManagerTask(this);
 		umt.setUpgradeListener(this);
 		ArrayList<Object> data = new ArrayList<Object>();
  		Payload p = new Payload(data);
 		umt.execute(p);
+ 		
 	}
 	
 	
@@ -91,6 +79,7 @@ public class StartUpActivity extends Activity implements UpgradeListener, PostIn
     }
 	
 	private void endStartUpScreen() {
+			
         // launch new activity and close splash screen
 		if (!MobileLearning.isLoggedIn(this)) {
 			startActivity(new Intent(StartUpActivity.this, WelcomeActivity.class));
@@ -102,7 +91,7 @@ public class StartUpActivity extends Activity implements UpgradeListener, PostIn
     }
 
 	private void installCourses(){
-		File dir = new File(MobileLearning.DOWNLOAD_PATH);
+		File dir = new File(FileUtils.getDownloadPath(this));
 		String[] children = dir.list();
 		if (children != null) {
 			ArrayList<Object> data = new ArrayList<Object>();
@@ -116,6 +105,22 @@ public class StartUpActivity extends Activity implements UpgradeListener, PostIn
 	}
 	
 	public void upgradeComplete(Payload p) {
+		
+		 // set up local dirs
+ 		if(!FileUtils.createDirs(this)){
+ 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+ 			builder.setCancelable(false);
+ 			builder.setTitle(R.string.error);
+ 			builder.setMessage(R.string.error_sdcard);
+ 			builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+ 				public void onClick(DialogInterface dialog, int which) {
+ 					StartUpActivity.this.finish();
+ 				}
+ 			});
+ 			builder.show();
+ 			return;
+ 		}
+ 		
 		if(p.isResult()){
 			Payload payload = new Payload();
 			PostInstallTask piTask = new PostInstallTask(this);
@@ -149,7 +154,7 @@ public class StartUpActivity extends Activity implements UpgradeListener, PostIn
 	public void installComplete(Payload p) {
 		if(p.getResponseData().size()>0){
 			Editor e = prefs.edit();
-			e.putLong("prefLastMediaScan", 0);
+			e.putLong(PrefsActivity.PREF_LAST_MEDIA_SCAN, 0);
 			e.commit();
 		}
 		endStartUpScreen();	

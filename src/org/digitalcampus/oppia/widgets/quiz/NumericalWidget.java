@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,13 @@ import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.mobile.quiz.model.Response;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
-public class NumericalWidget extends QuestionWidget {
+public class NumericalWidget extends TextInputQuizWidget {
 
 	public static final String TAG = NumericalWidget.class.getSimpleName();
 	
@@ -45,7 +47,9 @@ public class NumericalWidget extends QuestionWidget {
 		while(itr.hasNext()) {
 		    String answer = itr.next();
 		    et.setText(answer);
-		} 
+		}
+        hideOnFocusLoss(et);
+
 	}
 	
 	public List<String> getQuestionResponses(List<Response> responses){

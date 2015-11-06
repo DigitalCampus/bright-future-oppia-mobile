@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +31,19 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HTTP;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.listener.TrackerServiceListener;
 import org.digitalcampus.oppia.model.TrackerLog;
+import org.digitalcampus.oppia.model.User;
 import org.digitalcampus.oppia.utils.HTTPConnectionUtils;
 import org.digitalcampus.oppia.utils.MetaDataUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.splunk.mint.Mint;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -47,8 +51,6 @@ import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import com.bugsense.trace.BugSenseHandler;
 
 public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Payload> {
 
@@ -67,17 +69,19 @@ public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Paylo
 	protected Payload doInBackground(Payload... params) {
 		Payload payload = new Payload();
 		
-		try {
-				DbHelper db = new DbHelper(ctx);
-				long userId = db.getUserId(prefs.getString("prefUsername", ""));
-				Log.d(TAG,"userId: " + userId);
-				payload = db.getUnsentTrackers(userId);
+		try {	
+			DbHelper db = new DbHelper(ctx);
+			ArrayList<User> users = db.getAllUsers();
+			DatabaseManager.getInstance().closeDatabase();
+			
+			for (User u: users){
+				DbHelper db1 = new DbHelper(ctx);
+				payload = db1.getUnsentTrackers(u.getUserId());
 				DatabaseManager.getInstance().closeDatabase();
+				
 				@SuppressWarnings("unchecked")
 				Collection<Collection<TrackerLog>> result = (Collection<Collection<TrackerLog>>) split((Collection<Object>) payload.getData(), MobileLearning.MAX_TRACKER_SUBMIT);
-				
-				
-				
+
 				for (Collection<TrackerLog> trackerBatch : result) {
 					String dataToSend = createDataString(trackerBatch);
 					Log.d(TAG, "Debug data to Send: "+dataToSend);
@@ -91,7 +95,7 @@ public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Paylo
 		                se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
 		                httpPatch.setEntity(se);
 		                
-		                httpPatch.addHeader(client.getAuthHeader());
+		                httpPatch.addHeader(client.getAuthHeader(u.getUsername(), u.getApiKey()));
 						
 		                // make request
 						HttpResponse response = client.execute(httpPatch);	
@@ -115,13 +119,15 @@ public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Paylo
 								payload.setResult(true);
 								// update points
 								JSONObject jsonResp = new JSONObject(responseStr);
-								Editor editor = prefs.edit();
+								DbHelper dbpb = new DbHelper(ctx);
+								dbpb.updateUserPoints(u.getUserId(), jsonResp.getInt("points"));
+								dbpb.updateUserBadges(u.getUserId(), jsonResp.getInt("badges"));
+								DatabaseManager.getInstance().closeDatabase();
 								
-								editor.putInt("prefPoints", jsonResp.getInt("points"));
-								editor.putInt("prefBadges", jsonResp.getInt("badges"));
+								Editor editor = prefs.edit();
 								try {
-									editor.putBoolean("prefScoringEnabled", jsonResp.getBoolean("scoring"));
-									editor.putBoolean("prefBadgingEnabled", jsonResp.getBoolean("badging"));
+									editor.putBoolean(PrefsActivity.PREF_SCORING_ENABLED, jsonResp.getBoolean("scoring"));
+									editor.putBoolean(PrefsActivity.PREF_BADGING_ENABLED, jsonResp.getBoolean("badging"));
 								} catch (JSONException e) {
 									e.printStackTrace();
 								}
@@ -155,21 +161,25 @@ public class SubmitTrackerMultipleTask extends AsyncTask<Payload, Integer, Paylo
 					} catch (IOException e) {
 						payload.setResult(false);
 					} catch (JSONException e) {
-						if(!MobileLearning.DEVELOPER_MODE){
-							BugSenseHandler.sendException(e);
-						} else {
-							e.printStackTrace();
-						}
+						Mint.logException(e);
+						e.printStackTrace();
 						payload.setResult(false);
 					} 
 					publishProgress(0);
 				}
-			
+				
+			}
 	
 		} catch (IllegalStateException ise) {
 			ise.printStackTrace();
 			payload.setResult(false);
 		} 
+		
+		Editor editor = prefs.edit();
+		long now = System.currentTimeMillis()/1000;
+		editor.putLong(PrefsActivity.PREF_TRIGGER_POINTS_REFRESH, now);
+		editor.commit();
+		
 		return payload;
 	}
 

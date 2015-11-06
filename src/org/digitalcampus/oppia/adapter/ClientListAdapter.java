@@ -1,10 +1,5 @@
 package org.digitalcampus.oppia.adapter;
 
-import java.util.ArrayList;
-
-import org.bright.future.oppia.mobile.learning.R;
-import org.digitalcampus.oppia.model.Client;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -13,7 +8,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-public class ClientListAdapter extends ArrayAdapter {
+import org.digitalcampus.oppia.model.Client;
+import org.bright.future.oppia.mobile.learning.R;
+
+import java.util.ArrayList;
+
+public class ClientListAdapter extends ArrayAdapter<Client> {
     public static final String TAG = ClientListAdapter.class.getSimpleName();
 
     private final Context ctx;

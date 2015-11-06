@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,15 +20,18 @@ package org.digitalcampus.oppia.task;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.exception.InvalidXMLException;
 import org.digitalcampus.oppia.listener.ScanMediaListener;
 import org.digitalcampus.oppia.model.Course;
 import org.digitalcampus.oppia.model.Media;
-import org.digitalcampus.oppia.utils.CourseXMLReader;
+import org.digitalcampus.oppia.service.DownloadService;
+import org.digitalcampus.oppia.utils.xmlreaders.CourseXMLReader;
+import org.digitalcampus.oppia.utils.storage.FileUtils;
 
 import android.content.Context;
 import android.os.AsyncTask;
+
+import com.splunk.mint.Mint;
 
 public class ScanMediaTask extends AsyncTask<Payload, String, Payload>{
 
@@ -41,27 +44,36 @@ public class ScanMediaTask extends AsyncTask<Payload, String, Payload>{
 	}
 	
 	protected Payload doInBackground(Payload... params) {
+
 		Payload payload = params[0];
+        ArrayList<Object> currentMedia = payload.getResponseData();
+        ArrayList<String> downloadingMedia = DownloadService.getTasksDownloading();
+
 		for (Object obj: payload.getData()){
 			Course course = (Course) obj;
+            File courseXML = new File(course.getCourseXMLLocation());
+            if (!courseXML.exists()){ continue; }
+
 			CourseXMLReader cxr;
 			try {
-				cxr = new CourseXMLReader(course.getCourseXMLLocation(),ctx);
+				cxr = new CourseXMLReader(course.getCourseXMLLocation(), course.getCourseId(), ctx);
 				ArrayList<Media> media = cxr.getMedia();
+
 				for(Media m: media){
 					publishProgress(m.getFilename());
-					String filename = MobileLearning.MEDIA_PATH + m.getFilename();
+					String filename = FileUtils.getMediaPath(ctx) + m.getFilename();
 					File mediaFile = new File(filename);
-					if(!mediaFile.exists()){
+					if((!mediaFile.exists()) || ( (downloadingMedia!=null)&&(downloadingMedia.contains(m.getDownloadUrl())) )) {
 						// check media not already in list
-						ArrayList<Object> currentMedia = payload.getResponseData();
 						boolean add = true;
 						for (Object cm: currentMedia){
-							if (((Media) cm).getFilename().equals(m.getFilename())){
-								add = false;
-							}
+                            //We have to add it if there is not other object with that filename
+							add = !((Media) cm).getFilename().equals(m.getFilename());
 						}
 						if (add){
+                            if (downloadingMedia!=null && downloadingMedia.contains(m.getDownloadUrl())){
+                                m.setDownloading(true);
+                            }
 							payload.addResponseData(m);
 							payload.setResult(true);
 						}
@@ -69,10 +81,12 @@ public class ScanMediaTask extends AsyncTask<Payload, String, Payload>{
 				}
 			} catch (InvalidXMLException e) {
 				e.printStackTrace();
+                Mint.logException(e);
 				payload.setResult(false);
 			}
 			
 		}
+
 		return payload;
 	}
 	

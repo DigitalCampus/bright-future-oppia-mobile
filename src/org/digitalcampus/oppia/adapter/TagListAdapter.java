@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ public class TagListAdapter extends ArrayAdapter<Tag> {
 	
 	private final Context ctx;
 	private final ArrayList<Tag> tagList;
-	private ImageView tagIcon;
 	public ImageLoader imageLoader; 
 	
 	public TagListAdapter(Activity context, ArrayList<Tag> tagList) {
@@ -48,37 +47,52 @@ public class TagListAdapter extends ArrayAdapter<Tag> {
 		this.tagList = tagList;
 		imageLoader=new ImageLoader(ctx);
 	}
-	
+
+    static class TagViewHolder{
+        TextView tagName;
+        TextView tagDescription;
+        ImageView tagIcon;
+    }
+
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 
-		LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-	    View rowView = inflater.inflate(R.layout.tag_row, parent, false);
-	    Tag t = tagList.get(position);
-	    rowView.setTag(t);
-	    
-	    TextView tagName = (TextView) rowView.findViewById(R.id.tag_name);
-	    tagName.setText(ctx.getString(R.string.tag_label,t.getName(),t.getCount()));
-	    
-	    if(t.isHighlight()){
-	    	tagName.setTypeface(null, Typeface.BOLD);
-	    }
-	    
-	    if(t.getDescription() != null && !t.getDescription().trim().equals("") ){
-		    TextView tagDesc = (TextView) rowView.findViewById(R.id.tag_description);
-		    tagDesc.setText(t.getDescription());
-		    tagDesc.setVisibility(View.VISIBLE);
-	    }
-	    
-	    tagIcon = (ImageView) rowView.findViewById(R.id.tag_icon);
-	    if(t.getIcon() != null){
-	    	
-	    	
-	    	imageLoader.DisplayImage(t.getIcon(), tagIcon);
-	    	tagIcon.setVisibility(View.VISIBLE);
+        TagViewHolder viewHolder;
+        
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater) ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView  = inflater.inflate(R.layout.tag_row, parent, false);
+            viewHolder = new TagViewHolder();
+            viewHolder.tagName = (TextView) convertView.findViewById(R.id.tag_name);
+            viewHolder.tagDescription = (TextView) convertView.findViewById(R.id.tag_description);
+            viewHolder.tagIcon = (ImageView) convertView.findViewById(R.id.tag_icon);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (TagViewHolder) convertView.getTag();
+        }
 
+	    Tag t = tagList.get(position);
+
+        viewHolder.tagName.setText(ctx.getString(R.string.tag_label,t.getName(),t.getCount()));
+	    if(t.isHighlight()){ 
+	    	viewHolder.tagName.setTypeface(null, Typeface.BOLD); 
+	    } else {
+	    	viewHolder.tagName.setTypeface(null, Typeface.NORMAL);
 	    }
-	    return rowView;
+	    if(t.getDescription() != null && !t.getDescription().trim().equals("") ){
+            viewHolder.tagDescription.setText(t.getDescription());
+            viewHolder.tagDescription.setVisibility(View.VISIBLE);
+	    } else {
+	    	viewHolder.tagDescription.setVisibility(View.GONE);
+	    }
+	    if(t.getIcon() != null){
+	    	imageLoader.DisplayImage(t.getIcon(), viewHolder.tagIcon);
+            viewHolder.tagIcon.setVisibility(View.VISIBLE);
+	    } else {
+	    	viewHolder.tagIcon.setVisibility(View.GONE);
+	    }
+
+	    return convertView;
 	}
 }
 

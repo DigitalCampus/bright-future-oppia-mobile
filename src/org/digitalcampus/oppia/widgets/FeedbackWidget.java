@@ -1,5 +1,5 @@
 /* 
- * This file is part of OppiaMobile - http://oppia-mobile.org/
+ * This file is part of OppiaMobile - https://digital-campus.org/
  * 
  * OppiaMobile is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,12 +32,13 @@ import org.digitalcampus.mobile.quiz.model.questiontypes.MultiSelect;
 import org.digitalcampus.mobile.quiz.model.questiontypes.Numerical;
 import org.digitalcampus.mobile.quiz.model.questiontypes.ShortAnswer;
 import org.digitalcampus.oppia.activity.CourseActivity;
-import org.digitalcampus.oppia.activity.CourseIndexActivity;
+import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
 import org.digitalcampus.oppia.application.Tracker;
 import org.digitalcampus.oppia.model.Activity;
 import org.digitalcampus.oppia.model.Course;
+import org.digitalcampus.oppia.model.QuizAttempt;
 import org.digitalcampus.oppia.utils.MetaDataUtils;
 import org.digitalcampus.oppia.widgets.quiz.EssayWidget;
 import org.digitalcampus.oppia.widgets.quiz.MultiChoiceWidget;
@@ -48,7 +49,6 @@ import org.digitalcampus.oppia.widgets.quiz.ShortAnswerWidget;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -103,7 +103,7 @@ public class FeedbackWidget extends WidgetFactory {
 		activity = ((Activity) getArguments().getSerializable(Activity.TAG));
 		this.setIsBaseline(getArguments().getBoolean(CourseActivity.BASELINE_TAG));
 		feedbackContent = ((Activity) getArguments().getSerializable(Activity.TAG)).getContents(prefs.getString(
-				"prefLanguage", Locale.getDefault().getLanguage()));
+				PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 
 		LayoutParams lp = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 		vv.setLayoutParams(lp);
@@ -127,23 +127,28 @@ public class FeedbackWidget extends WidgetFactory {
 		nextBtn = (Button) getView().findViewById(R.id.mquiz_next_btn);
 		qText = (TextView) getView().findViewById(R.id.question_text);
 		questionImage = (LinearLayout) getView().findViewById(R.id.question_image);
+
+        loadFeedback();
 	}
 	
 	@Override
 	public void onResume(){
 		super.onResume();
-		if (this.feedback == null) {
-			this.feedback = new Quiz();
-			this.feedback.load(feedbackContent,prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
-		}
-		if (this.isOnResultsPage) {
-			this.showResults();
-		} else {
-			this.showQuestion();
-		}
+        loadFeedback();
 	}
-	
-	
+
+    private void loadFeedback(){
+        if (this.feedback == null) {
+            this.feedback = new Quiz();
+            this.feedback.load(feedbackContent,prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
+        }
+        if (this.isOnResultsPage) {
+            this.showResults();
+        } else {
+            this.showQuestion();
+        }
+    }
+
 	public void showQuestion() {
 		QuizQuestion q = null;
 		try {
@@ -155,7 +160,7 @@ public class FeedbackWidget extends WidgetFactory {
 		}
 		qText.setVisibility(View.VISIBLE);
 		// convert in case has any html special chars
-		qText.setText(Html.fromHtml(q.getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage())).toString()));
+		qText.setText(Html.fromHtml(q.getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage())).toString()));
 
 		if (q.getProp("image") == null) {
 			questionImage.setVisibility(View.GONE);
@@ -237,41 +242,39 @@ public class FeedbackWidget extends WidgetFactory {
 	
 	public void showResults() {
 
-		// log the activity as complete
-		isOnResultsPage = true;
-		this.saveTracker();
+        if (!isOnResultsPage){
+            // log the activity as complete
+            isOnResultsPage = true;
+            this.saveTracker();
 
-		// save results ready to send back to the quiz server
-		String data = feedback.getResultObject().toString();
-		DbHelper db = new DbHelper(super.getActivity());
-		db.insertQuizResult(data, course.getCourseId());
-		DatabaseManager.getInstance().closeDatabase();
+            // save results ready to send back to the quiz server
+            String data = feedback.getResultObject().toString();
+            DbHelper db = new DbHelper(super.getActivity());
+            long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
+    		
+    		QuizAttempt qa = new QuizAttempt();
+    		qa.setCourseId(course.getCourseId());
+    		qa.setUserId(userId);
+    		qa.setData(data);
+    		qa.setActivityDigest(activity.getDigest());
+    		qa.setScore(feedback.getUserscore());
+    		qa.setMaxscore(feedback.getMaxscore());
+    		qa.setPassed(this.getActivityCompleted());
 
-		// load new layout
-		View view = getView().findViewById(R.id.quiz_progress);
-	    ViewGroup parent = (ViewGroup) view.getParent();
-	    int index = parent.indexOfChild(view);
-	    parent.removeView(view);
-	    view = super.getActivity().getLayoutInflater().inflate(R.layout.widget_feedback_results, parent, false);
-	    parent.addView(view, index);
-	    
-	    if (this.isBaseline) {
-			Button baselineExtro = (Button) getView().findViewById(R.id.feedback_continue_button);
-			baselineExtro.setVisibility(View.VISIBLE);
-			baselineExtro.setText(super.getActivity().getString(R.string.widget_feedback_continue));
-			baselineExtro.setOnClickListener(new View.OnClickListener() {
-				public void onClick(View v) {
-					// open up the CourseIndexActivity
-					Intent i = new Intent(FeedbackWidget.this.getActivity(), CourseIndexActivity.class);
-					Bundle tb = new Bundle();
-					tb.putSerializable(Course.TAG, course);
-					i.putExtras(tb);
-					startActivity(i);
-					FeedbackWidget.this.getActivity().finish();
-				}
-			});
-		} 
+            db.insertQuizAttempt(qa);
+            DatabaseManager.getInstance().closeDatabase();
+        }
 
+        //Check if feedback results layout is already loaded
+        View feedbackResultsLayout = getView().findViewById(R.id.widget_feedback_results);
+        if (feedbackResultsLayout == null){
+            View view = getView().findViewById(R.id.quiz_progress);
+            ViewGroup parent = (ViewGroup) view.getParent();
+            int index = parent.indexOfChild(view);
+            parent.removeView(view);
+            view = super.getActivity().getLayoutInflater().inflate(R.layout.widget_feedback_results, parent, false);
+            parent.addView(view, index);
+        }
 	}
 	
 	private void setProgress() {
@@ -308,7 +311,7 @@ public class FeedbackWidget extends WidgetFactory {
 
 	@Override
 	public void saveTracker() {
-		long timetaken = System.currentTimeMillis() / 1000 - this.getStartTime();
+		long timetaken = this.getSpentTime();
 		Tracker t = new Tracker(super.getActivity());
 		JSONObject obj = new JSONObject();
 		if(!isOnResultsPage){
@@ -319,7 +322,7 @@ public class FeedbackWidget extends WidgetFactory {
 			MetaDataUtils mdu = new MetaDataUtils(super.getActivity());
 			obj.put("timetaken", timetaken);
 			obj = mdu.getMetaData(obj);
-			String lang = prefs.getString("prefLanguage", Locale.getDefault().getLanguage());
+			String lang = prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage());
 			obj.put("lang", lang);
 			obj.put("quiz_id", feedback.getID());
 			obj.put("instance_id", feedback.getInstanceID());
@@ -338,7 +341,7 @@ public class FeedbackWidget extends WidgetFactory {
 		// Get the current question text
 		String toRead = "";
 		try {
-			toRead = feedback.getCurrentQuestion().getTitle(prefs.getString("prefLanguage", Locale.getDefault().getLanguage()));
+			toRead = feedback.getCurrentQuestion().getTitle(prefs.getString(PrefsActivity.PREF_LANGUAGE, Locale.getDefault().getLanguage()));
 		} catch (InvalidQuizException e) {
 			e.printStackTrace();
 		}
@@ -366,6 +369,5 @@ public class FeedbackWidget extends WidgetFactory {
 			this.isOnResultsPage = (Boolean) config.get("OnResultsPage");
 		}		
 	}
-	
 
 }
