@@ -2,6 +2,10 @@
     <string name="app_name">Bright Future</string>
     <string name="app_logo_alt">Digital Campus Logo</string>
     
+    
+    <string name="gcm_defaultSenderId">1084526475504</string>
+    <!-- string name="gcm_defaultSenderId">admin-api-cc4ba</string -->
+    
     <string name="about_logged_in">Logged in as: %1$s</string>
     <string name="about_not_logged_in">Not logged in</string>
     
@@ -305,6 +309,11 @@
     <string name="admin_password_newpassword_dialog_message">Please, introduce your admin password</string>
     <string name="prefAdminProtection">Protect admin actions with password</string>
     <string name="prefAdminPassword">Change admin password</string>
+    <string name="prefRemoteAdminEnabled">Enable remote administration of the device</string>
+
+    <string name="notification.remote_admin.title">Oppia Remote Administration</string>
+    <string name="notification.remote_admin.camera_disabled">The device cameras have been disabled remotely</string>
+    <string name="notification.remote_admin.camera_enabled">The device cameras have been enabled remotely</string>
 
     <string name="details">Details</string>
     <string name="makevisit">Make Visit</string>

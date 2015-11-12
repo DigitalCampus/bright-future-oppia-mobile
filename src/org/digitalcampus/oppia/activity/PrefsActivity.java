@@ -20,6 +20,7 @@ package org.digitalcampus.oppia.activity;
 import java.util.ArrayList;
 
 import org.bright.future.oppia.mobile.learning.R;
+import org.digitalcampus.oppia.application.AdminReceiver;
 import org.digitalcampus.oppia.fragments.PreferencesFragment;
 import org.digitalcampus.oppia.listener.MoveStorageListener;
 import org.digitalcampus.oppia.task.ChangeStorageOptionTask;
@@ -27,11 +28,16 @@ import org.digitalcampus.oppia.task.Payload;
 import org.digitalcampus.oppia.utils.UIUtils;
 import org.digitalcampus.oppia.utils.storage.FileUtils;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
+import android.app.admin.DevicePolicyManager;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -87,6 +93,12 @@ public class PrefsActivity extends AppActivity implements SharedPreferences.OnSh
 
     public static final String PREF_ADMIN_PROTECTION = "prefAdminProtection";
     public static final String PREF_ADMIN_PASSWORD = "prefAdminPassword";
+
+    //Google Cloud Messaging preferences
+    public static final String GCM_TOKEN_SENT = "prefGCMTokenSent";
+    public static final String GCM_TOKEN_ID = "prefGCMRegistration_id";
+    public static final String PREF_REMOTE_ADMIN = "prefRemoteAdminEnabled";
+    public static final int ADMIN_ACTIVATION_REQUEST = 45;
 
     private SharedPreferences prefs;
     private ProgressDialog pDialog;
