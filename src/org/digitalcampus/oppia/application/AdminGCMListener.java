@@ -22,6 +22,7 @@ import com.google.android.gms.gcm.GcmListenerService;
 import org.bright.future.oppia.mobile.learning.R;
 import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.activity.StartUpActivity;
+import org.digitalcampus.oppia.utils.UIUtils;
 import org.digitalcampus.oppia.utils.ui.OppiaNotificationBuilder;
 
 @SuppressLint("NewApi")
@@ -51,33 +52,40 @@ public class AdminGCMListener extends GcmListenerService {
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
                 boolean adminEnabled = prefs.getBoolean(PrefsActivity.PREF_REMOTE_ADMIN, false);
                 //First, we need to check if admin option is enabled
-                if (!adminEnabled){
+                // Not worked
+                /*if (!adminEnabled){
                     Log.d(TAG, "Device Administration is disabled :(");
                     return;
+                }*/
+                
+                try {
+	                String action = messageData.getString(MESSAGE_ACTION);
+	                Log.d(TAG, "Remote admin action: " + action);
+	                if (ACTION_DISABLE_CAMERA.equals(action)){
+	                    ComponentName adminReceiver = new ComponentName(this, AdminReceiver.class);
+	                    DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+	                    policyManager.setCameraDisabled(adminReceiver, true);
+	                    sendNotification(getString(R.string.notification_remote_admin_camera_disabled));
+	                }
+	                else if (ACTION_ENABLE_CAMERA.equals(action)){
+	                    ComponentName adminReceiver = new ComponentName(this, AdminReceiver.class);
+	                    DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+	                    policyManager.setCameraDisabled(adminReceiver, false);
+	                    sendNotification(getString(R.string.notification_remote_admin_camera_enabled));
+	                }
+	                else if (ACTION_PASSWORD_LOCK.equals(action)){
+	                    String password = messageData.getString(MESSAGE_PASSWORD);
+	                    if ((password != null) && !password.equals("")){
+	                        DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
+	                        policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
+	                        policyManager.lockNow();
+	                    }
+	
+	                }
                 }
-
-                String action = messageData.getString(MESSAGE_ACTION);
-                Log.d(TAG, "Remote admin action: " + action);
-                if (ACTION_DISABLE_CAMERA.equals(action)){
-                    ComponentName adminReceiver = new ComponentName(this, AdminReceiver.class);
-                    DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-                    policyManager.setCameraDisabled(adminReceiver, true);
-                    sendNotification(getString(R.string.notification_remote_admin_camera_disabled));
-                }
-                else if (ACTION_ENABLE_CAMERA.equals(action)){
-                    ComponentName adminReceiver = new ComponentName(this, AdminReceiver.class);
-                    DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-                    policyManager.setCameraDisabled(adminReceiver, false);
-                    sendNotification(getString(R.string.notification_remote_admin_camera_enabled));
-                }
-                else if (ACTION_PASSWORD_LOCK.equals(action)){
-                    String password = messageData.getString(MESSAGE_PASSWORD);
-                    if ((password != null) && !password.equals("")){
-                        DevicePolicyManager policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
-                        policyManager.resetPassword(password, DevicePolicyManager.RESET_PASSWORD_REQUIRE_ENTRY);
-                        policyManager.lockNow();
-                    }
-
+                catch (Exception e) {
+                	Log.d(TAG, "Device Administration is disabled :(");
+                	return;
                 }
             }
 

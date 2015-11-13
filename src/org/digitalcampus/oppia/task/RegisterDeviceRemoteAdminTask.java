@@ -11,7 +11,10 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
 import org.digitalcampus.oppia.activity.PrefsActivity;
 import org.digitalcampus.oppia.application.DatabaseManager;
 import org.digitalcampus.oppia.application.DbHelper;
@@ -19,6 +22,8 @@ import org.digitalcampus.oppia.application.MobileLearning;
 import org.digitalcampus.oppia.exception.UserNotFoundException;
 import org.digitalcampus.oppia.model.User;
 import org.digitalcampus.oppia.utils.HTTPConnectionUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +56,7 @@ public class RegisterDeviceRemoteAdminTask extends AsyncTask<Payload, Void, Payl
         Log.d(TAG, "Checking if is needed to send the token");
         String username = prefs.getString(PrefsActivity.PREF_USER_NAME, "");
         boolean tokenSent = prefs.getBoolean(PrefsActivity.GCM_TOKEN_SENT, false);
+        
         //If there is no user logged in or the token has already been sent, we exit the task
         if (tokenSent || username.equals("")){
             return false;
@@ -71,14 +77,23 @@ public class RegisterDeviceRemoteAdminTask extends AsyncTask<Payload, Void, Payl
         	DbHelper db = new DbHelper(ctx);
         	User u = db.getUser(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
             // Request parameters and other properties.
-            List<NameValuePair> params = new ArrayList<NameValuePair>(2);
-            params.add(new BasicNameValuePair("name", deviceModel));
-            params.add(new BasicNameValuePair("dev_id", deviceID));
-            params.add(new BasicNameValuePair("reg_id", token));
+            //List<NameValuePair> params = new ArrayList<NameValuePair>(2);
+            //params.add(new BasicNameValuePair("name", deviceModel));
+            //params.add(new BasicNameValuePair("dev_id", deviceID));
+            //params.add(new BasicNameValuePair("reg_id", token));
             //params.add(new BasicNameValuePair("username", username));
-            httpPost.addHeader(client.getAuthHeader(u.getUsername(), u.getApiKey())); // authorization
-            httpPost.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+            JSONObject obj = new JSONObject();
+            obj.put("name", deviceModel);
+            obj.put("dev_id", deviceID);
+            obj.put("reg_id", token);
+            
+            httpPost.setHeader(client.getAuthHeader(u.getUsername(), u.getApiKey())); // authorization
+            httpPost.setHeader(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+            httpPost.setEntity(new StringEntity(obj.toString(), "UTF-8"));
 
+            Log.d("Params:",  obj.toString());
+            Log.d("User:", u.getUsername()+", "+u.getApiKey() );
+            
             // make request
             HttpResponse response = client.execute(httpPost);
             DatabaseManager.getInstance().closeDatabase();
@@ -95,7 +110,7 @@ public class RegisterDeviceRemoteAdminTask extends AsyncTask<Payload, Void, Payl
                     break;
             }
 
-        } catch (UnsupportedEncodingException | UserNotFoundException | ClientProtocolException e) {
+        } catch (UnsupportedEncodingException | UserNotFoundException | JSONException | ClientProtocolException e) {
             e.printStackTrace();
             Log.d(TAG, e.toString());
         } catch (IOException e) {
