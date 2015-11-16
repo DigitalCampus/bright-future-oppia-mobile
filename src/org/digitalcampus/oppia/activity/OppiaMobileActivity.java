@@ -180,10 +180,13 @@ public class OppiaMobileActivity extends AppActivity implements OnSharedPreferen
 		/*if (ujjwalComponent == MobileLearning.CLIENT_COUNSELLING_COMPONENT){
 			Log.d(TAG,"in counselling");
 			courses = db.getCounsellingCourses(userId);
-		} else if (ujjwalComponent == MobileLearning.MOBILE_LEARNING_COMPONENT){
+		} else */
+		if (ujjwalComponent == MobileLearning.MOBILE_LEARNING_COMPONENT){
 			Log.d(TAG,"in learning");
-			courses = db.getLearningCourses(userId);
-		} else {
+			courses.clear();
+			courses.addAll(db.getLearningCourses(userId));
+		} 
+		/*else {
             courses = new ArrayList<Course>();
 			Log.d(TAG,"in nothing");
 		}*/
