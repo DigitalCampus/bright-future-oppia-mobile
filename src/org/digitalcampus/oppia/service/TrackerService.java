@@ -86,6 +86,7 @@ public class TrackerService extends Service implements APIRequestListener {
 			// should only do this once a day or so....
 			prefs = PreferenceManager.getDefaultSharedPreferences(this);
 			long lastRun = prefs.getLong("lastCourseUpdateCheck", 0);
+ 			long lastSyncDate = prefs.getLong("lastClientSync", 0L);
 			long now = System.currentTimeMillis()/1000;
 			if((lastRun + (3600*12)) < now){
 				APIRequestTask task = new APIRequestTask(this);

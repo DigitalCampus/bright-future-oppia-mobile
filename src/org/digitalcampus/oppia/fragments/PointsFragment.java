@@ -88,8 +88,7 @@ public class PointsFragment extends Fragment implements APIRequestListener {
 
 	private void refreshPointsList() {
 		try {
-			ArrayList<Points> points = new ArrayList<Points>();
-			
+			points.clear();
 			for (int i = 0; i < (json.getJSONArray("objects").length()); i++) {
 				JSONObject json_obj = (JSONObject) json.getJSONArray("objects").get(i);
 				Points p = new Points();
