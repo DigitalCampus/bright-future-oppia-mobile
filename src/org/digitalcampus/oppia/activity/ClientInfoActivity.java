@@ -261,6 +261,8 @@ public class ClientInfoActivity extends AppActivity implements ClientDataSyncLis
 	        	else {
 	        		// not synced, delete it from local db.
 	        		clientDataSyncProgress();
+	        		client.setClientDeleteRecord(1);
+	        		db.updateClientAfterSync(client);
 	        		db.deleteUnregisteredClients(client.getClientId());
 	        		clientDataSyncComplete(null);
 	        	}

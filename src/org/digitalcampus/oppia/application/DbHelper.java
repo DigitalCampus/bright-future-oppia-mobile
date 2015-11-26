@@ -2054,7 +2054,12 @@ String sqlSeachFullText = String.format("SELECT c.%s AS courseid, a.%s as activi
         values.put(CLIENT_CLOSE_CASE, client.getClientCloseCase());
         values.put(CLIENT_DELETE_RECORD, client.getClientDeleteRecord());
 
-        db.update(CLIENT_TABLE, values, CLIENT_C_SERVER_ID + "=" + client.getClientServerId(), null);
+        if(client.getClientServerId() > 0) {
+        	db.update(CLIENT_TABLE, values, CLIENT_C_SERVER_ID + "=" + client.getClientServerId(), null);
+        }
+        else {
+        	db.update(CLIENT_TABLE, values, CLIENT_C_ID + "=" + client.getClientId(), null);
+        }
     }
 //    deleting clients newly created clients and replacing them with registered clients
     public void deleteUnregisteredClients(long clientId){
