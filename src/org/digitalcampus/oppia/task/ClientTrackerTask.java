@@ -54,11 +54,11 @@ public class ClientTrackerTask extends AsyncTask<Payload, Object, Payload> {
 		int clientSessionSentCount = prefs.getInt("prefSessionSentCount", 0);
         boolean sessionsReadyForSync = true;
     	for(int i= 0; i<clientSessions.size(); i++) {
-    		if(!clientSessions.get(i).getIsSynced()) {
+    		if(!clientSessions.get(i).getIsSynced() || clientSessions.get(i).getClientId()==0 ) {
     			sessionsReadyForSync = false; // sessions needs to be corrected before sending request
     			// try update session
     	        Client clientDetail = db.getClient(clientSessions.get(i).getClientId());
-    	        db.updateClientSession(clientDetail);
+    	        db.updateClientSession(clientDetail, clientSessions.get(i).getId());
        		}
     	}
     		

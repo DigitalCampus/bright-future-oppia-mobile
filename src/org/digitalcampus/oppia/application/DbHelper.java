@@ -1976,12 +1976,17 @@ String sqlSeachFullText = String.format("SELECT c.%s AS courseid, a.%s as activi
         System.out.println(count);
     }
     
-    public void updateClientSession(Client client){
+    public void updateClientSession(Client client, long sessionId){
         ContentValues values;
         values = new ContentValues();
-        values.put(CLIENT_TRACKER_C_CLIENT, client.getClientServerId());
-        values.put(CLIENT_TRACKER_C_CLIENTSTATUS, 1);
-        db.update(CLIENT_TRACKER_TABLE, values, CLIENT_TRACKER_C_CLIENT + "=" + client.getClientId(), null);
+        if(client.getClientServerId() > 0) {
+	        values.put(CLIENT_TRACKER_C_CLIENT, client.getClientServerId());
+	        values.put(CLIENT_TRACKER_C_CLIENTSTATUS, 1);
+	        db.update(CLIENT_TRACKER_TABLE, values, CLIENT_TRACKER_C_CLIENT + "=" + client.getClientId(), null);
+        }
+        else {
+        	deleteClientSession(sessionId);
+        }
     }
 
     public List<Long> checkSessionCorrected(long clientId, String username) {
