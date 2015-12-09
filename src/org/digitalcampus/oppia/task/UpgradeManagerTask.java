@@ -131,9 +131,18 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
 		if(!prefs.getBoolean("upgradeV46",false)){
 			Editor editor = prefs.edit();
 			editor.putBoolean("upgradeV46", true);
-			editor.putString("prefServer", ctx.getString(R.string.prefServerDefault));
+			//editor.putString("prefServer", ctx.getString(R.string.prefServerDefault));
 			editor.commit();
 			publishProgress(this.ctx.getString(R.string.info_upgrading,"v46"));
+			payload.setResult(true);
+		}
+		
+		if(!prefs.getBoolean("upgradeV49c",false)){
+			upgradeV49();
+			Editor editor = prefs.edit();
+			editor.putBoolean("upgradeV49c", true);
+			editor.commit();
+			publishProgress(this.ctx.getString(R.string.info_upgrading,"v49c"));
 			payload.setResult(true);
 		}
 		
@@ -146,6 +155,7 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
 		}
 		
 		if(!prefs.getBoolean("upgradeV55b",false)){
+			upgradeV55b();
 			Editor editor = prefs.edit();
 			editor.putBoolean("upgradeV55b", true);
 			editor.commit();
@@ -153,6 +163,21 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
 			payload.setResult(true);
 		}
 		
+		if(!prefs.getBoolean("upgradeV56a",false)){
+			upgradeV56a();
+			Editor editor = prefs.edit();
+			editor.putBoolean("upgradeV56a", true);
+			editor.commit();
+			publishProgress(this.ctx.getString(R.string.info_upgrading,"v56a"));
+			payload.setResult(true);
+		}
+		if(!prefs.getBoolean("upgradeV56b",false)){
+			Editor editor = prefs.edit();
+			editor.putBoolean("upgradeV56b", true);
+			editor.commit();
+			publishProgress(this.ctx.getString(R.string.info_upgrading,"v56b"));
+			payload.setResult(true);
+		}
 		return payload;
 	}
 	
@@ -254,7 +279,7 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
     	File[] dirs = ContextCompat.getExternalFilesDirs(ctx,null);
     	if(dirs.length > 0){
 
-	    	String destination = dirs[dirs.length-1].getAbsolutePath();
+	    	String destination = dirs[0].getAbsolutePath();
 	    	File downloadSource = new File(source + FileUtils.APP_DOWNLOAD_DIR_NAME);
 			File mediaSource = new File(source +  FileUtils.APP_MEDIA_DIR_NAME);
 			File courseSource = new File(source +  FileUtils.APP_COURSES_DIR_NAME);
@@ -330,7 +355,7 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
 	}
 	
 	// update all the current quiz results for the score/maxscore etc
-	protected void upgradeV54(){
+	protected void upgradeV55b(){
 		DbHelper db = new DbHelper(ctx);
 		ArrayList<QuizAttempt> quizAttempts = db.getAllQuizAttempts();
 		long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
@@ -450,7 +475,7 @@ public class UpgradeManagerTask extends AsyncTask<Payload, String, Payload> {
 		public int threshold;
 	}
 	
-	protected void upgradeV54a(){
+	protected void upgradeV56a(){
 		DbHelper db = new DbHelper(ctx);
 		long userId = db.getUserId(prefs.getString(PrefsActivity.PREF_USER_NAME, ""));
 		int points = prefs.getInt(UpgradeManagerTask.PREF_POINTS, 0);

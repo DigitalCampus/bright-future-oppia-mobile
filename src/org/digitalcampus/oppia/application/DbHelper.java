@@ -58,7 +58,7 @@ public class DbHelper extends SQLiteOpenHelper {
 
 	static final String TAG = DbHelper.class.getSimpleName();
 	static final String DB_NAME = "bright-future.db";
-	static final int DB_VERSION = 22;
+	static final int DB_VERSION = 23;
 
 	private static SQLiteDatabase db;
 	private SharedPreferences prefs;
@@ -503,6 +503,18 @@ public class DbHelper extends SQLiteOpenHelper {
 			db.execSQL(sql1);
 			String sql2 = "ALTER TABLE " + USER_TABLE + " ADD COLUMN " + USER_C_BADGES + " integer default 0;";
 			db.execSQL(sql2);
+			
+		}
+		if(oldVersion <= 22 && newVersion >= 23){
+			// update courses
+			db.execSQL("drop table if exists " + COURSE_TABLE);
+			db.execSQL("drop table if exists " + ACTIVITY_TABLE);
+			db.execSQL("drop table if exists " + TRACKER_LOG_TABLE);
+			db.execSQL("drop table if exists " + QUIZATTEMPTS_TABLE);
+			createCourseTable(db);
+			createActivityTable(db);
+			createLogTable(db);
+			createQuizAttemptsTable(db);
 		}
 	}
 
